@@ -1,0 +1,6 @@
+### ai-services ###
+
+__pycache__/
+
+### env ###
+.env
