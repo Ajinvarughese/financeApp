@@ -17,10 +17,10 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class UserService {
-
+    
     private final UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     //get all user
     public List<User> getAllUser(){

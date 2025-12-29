@@ -31,4 +31,7 @@ public class User extends EntityDetails {
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    private AccountStatus accountStatus;
 }
