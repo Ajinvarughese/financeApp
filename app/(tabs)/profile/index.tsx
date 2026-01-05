@@ -16,8 +16,10 @@ import { icons } from "@/constants/icons";
 const { width } = Dimensions.get("window");
 
 type User = {
+    id: number;
     name: string;
     email: string;
+    role: string;
 };
 
 export default function Profile() {
@@ -30,7 +32,9 @@ export default function Profile() {
 
     const loadUser = async () => {
         const raw = await AsyncStorage.getItem("currentUser");
-        if (raw) setUser(JSON.parse(raw));
+        if (raw) {
+            setUser(JSON.parse(raw));
+        }
     };
 
     const logout = async () => {
@@ -38,83 +42,84 @@ export default function Profile() {
         router.replace("/");
     };
 
+    if (!user) {
+        return (
+            <View style={styles.root}>
+                <Text style={{ color: "#9aa8a6", textAlign: "center", marginTop: 100 }}>
+                    Please login to view profile
+                </Text>
+            </View>
+        );
+    }
+
     return (
         <View style={styles.root}>
             <View style={styles.topGlow} pointerEvents="none" />
 
-            <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
-                {/* Header */}
+            <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+                {/* HEADER */}
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>My Profile</Text>
 
-                    <View style={styles.avatarRing}>
-                        <Image source={icons.person} style={styles.avatar} />
+                    <View style={styles.headerIcons}>
+                        <TouchableOpacity
+                            style={styles.iconBtn}
+                            onPress={() => router.push({ pathname: "/profile/notification" })}
+                        >
+                            <Image source={icons.info} style={styles.icon} />
+                        </TouchableOpacity>
+
+                        <View style={styles.avatarRing}>
+                            <Image source={icons.person} style={styles.avatar} />
+                        </View>
                     </View>
                 </View>
 
-                {/* USER CARD */}
+                {/* USER INFO */}
                 <View style={styles.userCard}>
-                    <Text style={styles.userName}>{user?.name || "Guest User"}</Text>
-                    <Text style={styles.userEmail}>{user?.email || "Not logged in"}</Text>
-                </View>
+                    <Text style={styles.userName}>{user.name}</Text>
+                    <Text style={styles.userEmail}>{user.email}</Text>
 
-                {/* BALANCE CARD */}
-                <View style={styles.balanceWrap}>
-                    <View style={styles.balanceShadow} />
-                    <View style={styles.balanceCard}>
-                        <Text style={styles.label}>Net Balance</Text>
-                        <Text style={styles.balance}>₹ 1,60,000</Text>
-
-                        <View style={styles.statRow}>
-                            <View style={styles.statChip}>
-                                <Text style={styles.statLabel}>Assets</Text>
-                                <Text style={styles.statValue}>₹5.6L</Text>
-                            </View>
-
-                            <View style={[styles.statChip, styles.redChip]}>
-                                <Text style={styles.statLabel}>Liabilities</Text>
-                                <Text style={[styles.statValue, styles.redText]}>₹4.0L</Text>
-                            </View>
-                        </View>
-
-                        <TouchableOpacity
-                            style={styles.primaryBtn}
-                            onPress={() => router.push("/asset/add")}
-                        >
-                            <Text style={styles.primaryBtnText}>Add Asset</Text>
-                        </TouchableOpacity>
+                    <View style={styles.roleBadge}>
+                        <Text style={styles.roleText}>{user.role}</Text>
                     </View>
                 </View>
 
                 {/* QUICK ACTIONS */}
                 <View style={styles.actionsRow}>
+
+
                     <TouchableOpacity
                         style={styles.actionCard}
-                        onPress={() => router.push("/liability")}
+                        onPress={() => router.push("/dashboard")}
                     >
-                        <Image source={icons.plus} style={styles.actionIcon} />
-                        <Text style={styles.actionText}>Add Liability</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.actionCard}>
-                        <Image source={icons.report} style={styles.actionIcon} />
-                        <Text style={styles.actionText}>Reports</Text>
+                        <Image source={icons.dash} style={styles.actionIcon} />
+                        <Text style={styles.actionText}>Dashboard</Text>
                     </TouchableOpacity>
                 </View>
 
                 {/* SETTINGS */}
                 <View style={styles.settings}>
-                    <TouchableOpacity style={styles.row}>
+                    <TouchableOpacity
+                        style={styles.row}
+                        onPress={() => router.push({ pathname: "/profile/security" })}
+                    >
                         <Text style={styles.rowText}>Security Settings</Text>
                         <Text style={styles.arrow}>›</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.row}>
+                    <TouchableOpacity
+                        style={styles.row}
+                        onPress={() => router.push({ pathname: "/profile/help" })}
+                    >
                         <Text style={styles.rowText}>Help & Support</Text>
                         <Text style={styles.arrow}>›</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.row, styles.logout]} onPress={logout}>
+                    <TouchableOpacity
+                        style={[styles.row, styles.logout]}
+                        onPress={logout}
+                    >
                         <Text style={styles.logoutText}>Logout</Text>
                     </TouchableOpacity>
                 </View>
@@ -122,9 +127,6 @@ export default function Profile() {
         </View>
     );
 }
-
-/* ---------------- STYLES ---------------- */
-
 const styles = StyleSheet.create({
     root: {
         flex: 1,
@@ -156,10 +158,26 @@ const styles = StyleSheet.create({
         fontWeight: "800",
     },
 
+    headerIcons: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+
+    iconBtn: {
+        marginRight: 12,
+        padding: 6,
+    },
+
+    icon: {
+        width: 22,
+        height: 22,
+        tintColor: "#d5efe6",
+    },
+
     avatarRing: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
         borderWidth: 2,
         borderColor: "rgba(0,212,138,0.3)",
         justifyContent: "center",
@@ -167,8 +185,8 @@ const styles = StyleSheet.create({
     },
 
     avatar: {
-        width: 40,
-        height: 40,
+        width: 34,
+        height: 34,
         tintColor: "#fff",
     },
 
@@ -187,91 +205,28 @@ const styles = StyleSheet.create({
 
     userEmail: {
         color: "#9aa8a6",
-        marginTop: 6,
-    },
-
-    balanceWrap: {
-        marginHorizontal: 20,
-        marginTop: 10,
-    },
-
-    balanceShadow: {
-        position: "absolute",
-        top: 10,
-        left: 8,
-        right: 8,
-        height: 180,
-        backgroundColor: "rgba(0,0,0,0.4)",
-        borderRadius: 18,
-    },
-
-    balanceCard: {
-        backgroundColor: "#0f1a1a",
-        borderRadius: 18,
-        padding: 18,
-    },
-
-    label: {
-        color: "#9aa8a6",
-        fontSize: 12,
-    },
-
-    balance: {
-        color: "#fff",
-        fontSize: 28,
-        fontWeight: "900",
-        marginVertical: 8,
-    },
-
-    statRow: {
-        flexDirection: "row",
-        marginTop: 10,
-    },
-
-    statChip: {
-        backgroundColor: "rgba(255,255,255,0.04)",
-        padding: 10,
-        borderRadius: 10,
-        marginRight: 10,
-    },
-
-    redChip: {
-        backgroundColor: "rgba(255,0,0,0.08)",
-    },
-
-    statLabel: {
-        color: "#9aa8a6",
-        fontSize: 11,
-    },
-
-    statValue: {
-        color: "#fff",
-        fontWeight: "800",
         marginTop: 4,
     },
 
-    redText: {
-        color: "#ff6b6b",
+    roleBadge: {
+        alignSelf: "flex-start",
+        marginTop: 10,
+        backgroundColor: "rgba(0,212,138,0.15)",
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
     },
 
-    primaryBtn: {
-        backgroundColor: "#00d48a",
-        marginTop: 14,
-        paddingVertical: 12,
-        borderRadius: 14,
-    },
-
-    primaryBtnText: {
-        textAlign: "center",
-        color: "#061014",
-        fontWeight: "900",
-        fontSize: 16,
+    roleText: {
+        color: "#00d48a",
+        fontWeight: "800",
+        fontSize: 12,
     },
 
     actionsRow: {
         flexDirection: "row",
-        marginTop: 20,
         paddingHorizontal: 20,
+        marginTop: 10,
     },
 
     actionCard: {
