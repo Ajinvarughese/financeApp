@@ -10,6 +10,7 @@ export type Asset = {
     debt: number;
     notes?: string;
     createdAt: number;
+    updatedAt: number;
 };
 
 /* ---------------- SAVE ASSET ---------------- */

@@ -5,29 +5,43 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveUser } from "@/utils/auth";
 import AuthField from "@/components/AuthField";
 import { AUTH } from "@/constants/authTheme";
+import axios from "axios";
+import API_URL from "@/utils/ApiUrl";
 
 export default function Register() {
     const router = useRouter();
-    const [name,setName] = useState("");
+    const [firstName,setFirstName] = useState("");
+    const [lastName, setlastName] = useState("");
     const [email,setEmail] = useState("");
+    const [age, setAge] = useState("");
     const [password,setPassword] = useState("");
     const [confirm,setConfirm] = useState("");
 
     const handleRegister = async ()=>{
         if(password!==confirm) return Alert.alert("Mismatch","Passwords do not match");
+        if(password.length < 6) return Alert.alert("Weak","Password must be at least 6 characters long");
+        const regData = {
+            firstName,
+            lastName,
+            email,
+            age,
+            password
+        };
+        try {
+            const res = await axios.post(`${API_URL}/user/register`, regData, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
 
-        const raw = await AsyncStorage.getItem("users");
-        const users = raw? JSON.parse(raw) : [];
+            const newUser = res.data;
+            await AsyncStorage.setItem("user", JSON.stringify(newUser));
+            await saveUser(newUser);
 
-        if(users.some((u:any)=>u.email===email))
-            return Alert.alert("Exists","Email already registered");
-
-        const newUser = { name,email,password };
-        users.push(newUser);
-        await AsyncStorage.setItem("users",JSON.stringify(users));
-        await saveUser(newUser);
-
-        router.replace("/(tabs)");
+            router.replace("/(tabs)");
+        } catch (error) {
+            return Alert.alert("Exists", "Email already registered");
+        }
     }
 
     return(
@@ -39,8 +53,10 @@ export default function Register() {
             <Text style={styles.tag}>Start your money journey</Text>
 
             <View style={styles.card}>
-                <AuthField label="Full Name" value={name} onChange={setName}/>
+                <AuthField label="First name" value={firstName} onChange={setFirstName}/>
+                <AuthField label="Last name" value={lastName} onChange={setlastName}/>
                 <AuthField label="Email" value={email} onChange={setEmail}/>
+                <AuthField label="Your age" value={age} onChange={setAge}/>
                 <AuthField label="Password" secure value={password} onChange={setPassword}/>
                 <AuthField label="Confirm Password" secure value={confirm} onChange={setConfirm}/>
 
