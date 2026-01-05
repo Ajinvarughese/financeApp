@@ -17,7 +17,7 @@ import { icons } from "@/constants/icons";
 
 import { getAssets } from "@/utils/assets";
 import { getLiabilities } from "@/utils/liabilities";
-import { getAIRecommendations } from "@/services/appwrite";
+import AIChat from "@/components/AIChat";
 
 type Tab = "assets" | "liabilities" | "ai";
 
@@ -33,14 +33,14 @@ export default function Records() {
     const [expandedId, setExpandedId] = useState<string | null>(null);
 
     const loadData = async () => {
+        if (activeTab === "ai") return;
+
         setLoading(true);
         try {
             if (activeTab === "assets") {
                 setData(await getAssets());
-            } else if (activeTab === "liabilities") {
-                setData(await getLiabilities());
             } else {
-                setData(await getAIRecommendations());
+                setData(await getLiabilities());
             }
         } catch {
             setData([]);
@@ -57,7 +57,7 @@ export default function Records() {
         setExpandedId(expandedId === id ? null : id);
     };
 
-    /* ---------------- RENDER CARDS ---------------- */
+    /* ---------------- ASSET CARD ---------------- */
 
     const renderAsset = (item: any) => {
         const savings = item.salary - item.expenses - item.debt;
@@ -85,14 +85,16 @@ export default function Records() {
                         <Row label="Expenses" value={`₹${item.expenses}`} />
                         <Row label="Debt" value={`₹${item.debt}`} />
                         <Row label="Monthly Savings" value={`₹${savings}`} />
-                        {item.notes ? (
+                        {item.notes && (
                             <Text style={styles.notes}>{item.notes}</Text>
-                        ) : null}
+                        )}
                     </View>
                 )}
             </TouchableOpacity>
         );
     };
+
+    /* ---------------- LIABILITY CARD ---------------- */
 
     const renderLiability = (item: any) => {
         const status =
@@ -118,8 +120,14 @@ export default function Records() {
                     <View style={styles.expandBox}>
                         <Row label="Loan Amount" value={`₹${item.amount}`} />
                         <Row label="Interest" value={`${item.interest}%`} />
-                        <Row label="Duration" value={`${item.months} months`} />
-                        <Row label="Salary Used" value={`${item.riskPercent}%`} />
+                        <Row
+                            label="Duration"
+                            value={`${item.months} months`}
+                        />
+                        <Row
+                            label="Salary Used"
+                            value={`${item.riskPercent}%`}
+                        />
                     </View>
                 )}
             </TouchableOpacity>
@@ -159,27 +167,34 @@ export default function Records() {
                     ))}
                 </View>
 
-                {/* Loading */}
-                {loading && (
-                    <ActivityIndicator size="large" color="#00d48a" />
-                )}
+                {/* AI TAB */}
+                {activeTab === "ai" ? (
+                    <AIChat />
+                ) : (
+                    <>
+                        {loading && (
+                            <ActivityIndicator
+                                size="large"
+                                color="#00d48a"
+                            />
+                        )}
 
-                {/* Empty */}
-                {!loading && data.length === 0 && (
-                    <Text style={styles.empty}>
-                        No {activeTab} added yet
-                    </Text>
-                )}
+                        {!loading && data.length === 0 && (
+                            <Text style={styles.empty}>
+                                No {activeTab} added yet
+                            </Text>
+                        )}
 
-                {/* List */}
-                <FlatList
-                    key={activeTab}
-                    data={data}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 140 }}
-                />
+                        <FlatList
+                            key={activeTab}
+                            data={data}
+                            renderItem={renderItem}
+                            keyExtractor={(item) => item.id}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingBottom: 140 }}
+                        />
+                    </>
+                )}
             </View>
         </View>
     );

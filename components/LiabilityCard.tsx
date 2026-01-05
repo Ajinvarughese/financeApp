@@ -1,7 +1,8 @@
 // components/LiabilityCard.tsx
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Theme } from "@/constants/theme";
+import { THEME } from "@/constants/theme";
+import {Theme} from "@react-navigation/native";
 
 type Liability = { id: any; name?: string; amount?: number; monthly_installment?: number; dueDate?: string; status?: string; [k: string]: any };
 

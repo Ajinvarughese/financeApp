@@ -1,8 +1,12 @@
-// app/(auth)/login.tsx
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    StyleSheet,
+    Alert,
+} from "react-native";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AUTH } from "@/constants/authTheme";
 import AuthField from "@/components/AuthField";
 
@@ -13,23 +17,11 @@ export default function Login() {
 
     const handleLogin = async () => {
         if (!email || !password) {
-            return Alert.alert("Missing Fields", "Email and password required");
+            Alert.alert("Missing Fields", "Email and password required");
+            return;
         }
 
-        const raw = await AsyncStorage.getItem("users");
-        const users = raw ? JSON.parse(raw) : [];
-
-        const found = users.find(
-            (u: any) => u.email.trim() === email.trim() && u.password === password
-        );
-
-        if (!found) return Alert.alert("Login Failed", "Invalid email or password");
-
-        // Save active user
-        await AsyncStorage.setItem("activeUser", JSON.stringify(found));
-
-        // Navigate to tabs
-        router.replace("/(tabs)");
+        router.replace("/(tabs)"); // TEMP for UI test
     };
 
     return (
@@ -42,7 +34,12 @@ export default function Login() {
 
             <View style={styles.card}>
                 <AuthField label="Email" value={email} onChange={setEmail} />
-                <AuthField label="Password" secure value={password} onChange={setPassword} />
+                <AuthField
+                    label="Password"
+                    secure
+                    value={password}
+                    onChange={setPassword}
+                />
 
                 <TouchableOpacity style={styles.btn} onPress={handleLogin}>
                     <Text style={styles.btnText}>Login</Text>
