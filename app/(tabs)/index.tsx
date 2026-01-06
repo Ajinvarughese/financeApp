@@ -13,22 +13,25 @@ import { useIsFocused } from "@react-navigation/native";
 import { getUser, logout } from "@/utils/auth";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
+import { User, UserRole } from "@/types/financial";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
 export default function Index() {
     const router = useRouter();
+
     const isFocused = useIsFocused();
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         const loadUser = async () => {
             const u = await getUser();
             setUser(u);
+            if(!u) router.replace("../");
         };
         loadUser();
     }, [isFocused]);
-
     return (
         <ScrollView
             style={styles.container}
@@ -52,6 +55,8 @@ export default function Index() {
                         onPress={async () => {
                             await logout();
                             setUser(null);
+                            router.replace("../");
+                            window.location.reload();
                         }}
                     >
                         <Text style={[styles.outlineText, { color: "#EF4444" }]}>
@@ -72,7 +77,7 @@ export default function Index() {
                 <TouchableOpacity
                     style={styles.primaryBtn}
                     onPress={() =>
-                        user ? router.push("/(tabs)") : router.push("/(auth)/welcome")
+                        user ? router.push("/(tabs)/dashboard") : router.push("/(auth)/welcome")
                     }
                 >
                     <Text style={styles.primaryBtnText}>
@@ -82,7 +87,7 @@ export default function Index() {
 
                 {user && (
                     <Text style={styles.welcome}>
-                        Welcome back, {user.name} 👋
+                        Welcome back, {user.firstName + " " + user.lastName} 👋
                     </Text>
                 )}
 

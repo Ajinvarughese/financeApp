@@ -1,4 +1,8 @@
-import React from "react";
+import { UserRole } from "@/types/financial";
+import { getUser, logout } from "@/utils/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useEffect } from "react";
 import {
     View,
     Text,
@@ -12,14 +16,24 @@ import { LineChart } from "react-native-chart-kit";
 const { width } = Dimensions.get("window");
 
 export default function AdminDashboard() {
+    const router = useRouter(); 
+    const handleLogout = async () => {
+        await logout();               
+        router.replace("/(auth)/login"); 
+    };
     return (
         <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 40 }}>
             {/* HERO */}
             <View style={styles.hero}>
-                <Text style={styles.heroTitle}>Admin Control Center</Text>
-                <Text style={styles.heroSub}>
-                    Real-time system overview & risk intelligence
-                </Text>
+                <View>
+                    <Text style={styles.heroTitle}>Admin Control Center</Text>
+                    <Text style={styles.heroSub}>
+                        Real-time system overview & risk intelligence
+                    </Text>
+                </View>
+                <View>
+                    <ActionBtn title="Logout" cruicial onPress={handleLogout} />
+                </View>
             </View>
 
             {/* KPI STRIP */}
@@ -106,20 +120,36 @@ const KPI = ({ title, value, trend, danger }: any) => (
     </View>
 );
 
-const ActionBtn = ({ title, primary }: any) => (
+const ActionBtn = ({ title, primary, cruicial, onPress }: any) => (
     <TouchableOpacity
-        style={[styles.actionBtn, primary && styles.actionPrimary]}
+        onPress={onPress}
+        style={[
+            styles.actionBtn,
+            primary && {
+                ...styles.actionPrimary,
+                borderColor: "#041F1A",
+            },
+            {
+                borderColor: "#041F1A",
+            },
+            cruicial && {
+                padding: 8,
+                borderColor: "#ff6b6b",
+            },
+        ]}
     >
         <Text
             style={[
                 styles.actionText,
                 primary && { color: "#041F1A" },
+                cruicial && { color: "#ff6b6b" },
             ]}
         >
             {title}
         </Text>
     </TouchableOpacity>
 );
+
 
 /* ---------- CHART CONFIG ---------- */
 
@@ -146,6 +176,9 @@ const styles = StyleSheet.create({
 
     hero: {
         marginBottom: 24,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between"
     },
 
     heroTitle: {
@@ -275,7 +308,6 @@ const styles = StyleSheet.create({
 
     actionBtn: {
         borderWidth: 1,
-        borderColor: "#00d48a",
         paddingVertical: 14,
         borderRadius: 16,
         marginBottom: 12,

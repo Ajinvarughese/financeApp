@@ -33,8 +33,8 @@ export default function Register() {
                 }
             });
 
-            const newUser = res.data;
-            await AsyncStorage.setItem("user", JSON.stringify(newUser));
+            const newUser = res.data.password;
+            await AsyncStorage.setItem("user", newUser);
             
 
             router.replace("/(tabs)");

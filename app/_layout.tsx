@@ -1,9 +1,31 @@
 // app/_layout.tsx
-import React from "react";
-import { Stack } from "expo-router";
+import React, { useEffect } from "react";
+import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "react-native";
+import { UserRole } from "@/types/financial";
+import { getUser } from "@/utils/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function RootLayout() {
+    const router = useRouter();
+    useEffect(() => {
+        const redirectUser = async () => {
+            if(await AsyncStorage.getItem("user")) {
+                const user = await getUser(); 
+                try {
+                    if (user?.role === UserRole.ADMIN) {
+                        router.replace("/(admin)/dashboard");
+                    } else {
+                        router.replace("/(tabs)");
+                    }
+                } catch (error) {
+                    console.log(error)
+                }
+            } 
+        };
+
+        redirectUser();
+        }, []);
     return (
         <>
             <StatusBar hidden />
@@ -16,8 +38,9 @@ export default function RootLayout() {
                 <Stack.Screen name="(auth)/register" />
                 <Stack.Screen name="(auth)/forgot" />
 
-                {/* MAIN APP */}
                 <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="(admin)" />
+                
             </Stack>
         </>
     );

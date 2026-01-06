@@ -8,19 +8,14 @@ import {
     Dimensions,
     ScrollView,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 
 import { icons } from "@/constants/icons";
+import { getUser, logout } from "@/utils/auth";
+import { User } from "@/types/financial";
 
 const { width } = Dimensions.get("window");
 
-type User = {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-};
 
 export default function Profile() {
     const router = useRouter();
@@ -31,15 +26,14 @@ export default function Profile() {
     }, []);
 
     const loadUser = async () => {
-        const raw = await AsyncStorage.getItem("currentUser");
-        if (raw) {
-            setUser(JSON.parse(raw));
-        }
+        const u = await getUser();
+        if(!u) router.replace("/");
+        setUser(u);
     };
 
-    const logout = async () => {
-        await AsyncStorage.removeItem("currentUser");
-        router.replace("/");
+    const logoutUser = async () => {
+        logout();
+        router.replace("../");
     };
 
     if (!user) {
@@ -77,7 +71,7 @@ export default function Profile() {
 
                 {/* USER INFO */}
                 <View style={styles.userCard}>
-                    <Text style={styles.userName}>{user.name}</Text>
+                    <Text style={styles.userName}>{user.firstName + " " + user.lastName}</Text>
                     <Text style={styles.userEmail}>{user.email}</Text>
 
                     <View style={styles.roleBadge}>
@@ -118,7 +112,7 @@ export default function Profile() {
 
                     <TouchableOpacity
                         style={[styles.row, styles.logout]}
-                        onPress={logout}
+                        onPress={logoutUser}
                     >
                         <Text style={styles.logoutText}>Logout</Text>
                     </TouchableOpacity>

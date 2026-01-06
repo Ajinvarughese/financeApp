@@ -1,5 +1,5 @@
 // app/index.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import {
     View,
     Text,
@@ -10,16 +10,38 @@ import {
     Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
-
+import { UserRole } from "@/types/financial";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images"; // optional mock image
+import { getUser } from "@/utils/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
 export default function Landing() {
     const router = useRouter();
-
+    
     const goAuth = () => router.push("/(auth)/welcome");
+
+    useEffect(() => {
+        const redirectUser = async () => {
+            console.log(await AsyncStorage.getItem("user"))
+            if(await AsyncStorage.getItem("user")) {
+                const user = await getUser(); 
+                try {
+                    if (user?.role === UserRole.ADMIN) {
+                        router.replace("/(admin)/dashboard");
+                    } else {
+                        router.replace("/(tabs)");
+                    }
+                } catch (error) {
+                    console.log(error)
+                }
+            } 
+        };
+
+        redirectUser();
+        }, []);
 
     return (
         <ScrollView

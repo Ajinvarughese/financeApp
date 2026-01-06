@@ -12,6 +12,8 @@ import AuthField from "@/components/AuthField";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import API_URL from "@/utils/ApiUrl";
 import axios from "axios";
+import { getUser } from "@/utils/auth";
+import { UserRole } from "@/types/financial";
 
 export default function Login() {
     const router = useRouter();
@@ -19,27 +21,34 @@ export default function Login() {
     const [password, setPassword] = useState("");
 
     const handleLogin = async () => {
-        if(password.length < 6) return Alert.alert("Weak","Password must be at least 6 characters long");
-        const logData = {
-            email,
-            password
-        };
+        if (password.length < 6) {
+            return Alert.alert(
+                "Weak Password",
+                "Password must be at least 6 characters long"
+            );
+        }
+
         try {
-            const res = await axios.post(`${API_URL}/user/login`, logData, {
-                headers: {
-                    "Content-Type": "application/json"
-                }
+            const res = await axios.post(`${API_URL}/user/login`, {
+                email,
+                password,
             });
+            const token = res.data.password;
+            // ✅ store ONLY the JWT
+            await AsyncStorage.setItem("user", token);
 
-            const logUser = res.data;
-            await AsyncStorage.setItem("user", JSON.stringify(logUser));
-            
+            // ✅ redirect using role from login response
+            if (res.data.role === UserRole.ADMIN) {
+                router.replace("/(admin)/dashboard");
+            } else {
+                router.replace("/(tabs)");
+            }
 
-            router.replace("/(tabs)");
         } catch (error) {
-            return Alert.alert("Wrong Credentials", "Email or Password is wrong");
+            Alert.alert("Login Failed", "Email or password is incorrect");
         }
     };
+
 
     return (
         <View style={styles.root}>

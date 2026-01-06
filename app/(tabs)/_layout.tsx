@@ -1,6 +1,10 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { Image, Text, View, StyleSheet } from "react-native";
 import { icons } from "@/constants/icons";
+import { useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getUser } from "@/utils/auth";
+import { UserRole } from "@/types/financial";
 
 const ACTIVE = "#00d48a";
 const INACTIVE = "#6b7280";
@@ -13,6 +17,7 @@ type IconProps = {
 };
 
 function TabIcon({ focused, icon, label }: IconProps) {
+    
     return (
         <View style={styles.iconWrapper}>
             <View style={[styles.iconBox, focused && styles.iconBoxActive]}>
