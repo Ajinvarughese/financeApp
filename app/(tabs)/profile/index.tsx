@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 
 import { icons } from "@/constants/icons";
 import { getUser, logout } from "@/utils/auth";
-import { User } from "@/types/financial";
+import { User } from "@/types/entity";
 
 const { width } = Dimensions.get("window");
 

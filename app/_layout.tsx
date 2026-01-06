@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "react-native";
-import { UserRole } from "@/types/financial";
+import { UserRole } from "@/types/entity";
 import { getUser } from "@/utils/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 

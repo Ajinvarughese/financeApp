@@ -1,4 +1,4 @@
-import { UserRole } from "@/types/financial";
+import { UserRole } from "@/types/entity";
 import { getUser, logout } from "@/utils/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";

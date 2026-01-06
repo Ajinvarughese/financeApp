@@ -13,8 +13,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { getUser, logout } from "@/utils/auth";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
-import { User, UserRole } from "@/types/financial";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { User, UserRole } from "@/types/entity";
 
 const { width } = Dimensions.get("window");
 

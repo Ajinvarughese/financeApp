@@ -10,7 +10,7 @@ import {
     Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { UserRole } from "@/types/financial";
+import { UserRole } from "@/types/entity";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images"; // optional mock image
 import { getUser } from "@/utils/auth";

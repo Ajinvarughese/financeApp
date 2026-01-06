@@ -15,7 +15,7 @@ import {
 import { images } from "@/constants/images";
 import { icons } from "@/constants/icons";
 
-import { getAssets } from "@/utils/assets";
+import { fetchAssets } from "@/utils/api";
 import { getLiabilities } from "@/utils/liabilities";
 import AIChat from "@/components/AIChat";
 
@@ -38,7 +38,7 @@ export default function Records() {
         setLoading(true);
         try {
             if (activeTab === "assets") {
-                setData(await getAssets());
+                setData(await fetchAssets());
             } else {
                 setData(await getLiabilities());
             }

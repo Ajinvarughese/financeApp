@@ -1,3 +1,5 @@
+import { fetchAssets } from "@/utils/api";
+import { getLiabilities } from "@/utils/liabilities";
 import React, { useEffect, useState } from "react";
 import {
     View,
@@ -9,8 +11,6 @@ import {
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 
-import { getAssets } from "@/utils/assets";
-import { getLiabilities } from "@/utils/liabilities";
 
 const { width } = Dimensions.get("window");
 
@@ -25,7 +25,7 @@ export default function Dashboard() {
 
     const load = async () => {
         setLoading(true);
-        const a = await getAssets();
+        const a = await fetchAssets();
         const l = await getLiabilities();
         setAssets(a);
         setLiabilities(l);

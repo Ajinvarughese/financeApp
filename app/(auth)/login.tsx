@@ -13,7 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import API_URL from "@/utils/ApiUrl";
 import axios from "axios";
 import { getUser } from "@/utils/auth";
-import { UserRole } from "@/types/financial";
+import { UserRole } from "@/types/entity";
 
 export default function Login() {
     const router = useRouter();

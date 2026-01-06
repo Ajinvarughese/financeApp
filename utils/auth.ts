@@ -1,4 +1,4 @@
-import { User } from "@/types/financial";
+import { User } from "@/types/entity";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import API_URL from "./ApiUrl";

@@ -12,17 +12,17 @@ export interface User {
     role: UserRole;
 }
 
-// src/types/financial.ts
-export interface Asset {
-    id: number | string;
-    name: string;                 // required (used in UI)
-    category?: string;
-    value?: number;
-    thumbnail?: any;
+export type Asset = {
+    id: string;
+    source: string;
+    income: number;
+    expenses: number;
+    user: User;
+    debt: number;
     notes?: string;
-    // allow other unknown fields from API
-    [k: string]: any;
-}
+    createdAt: number;
+    updatedAt: number;
+};
 
 export interface Liability {
     id: number | string;

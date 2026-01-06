@@ -4,7 +4,7 @@ import { icons } from "@/constants/icons";
 import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUser } from "@/utils/auth";
-import { UserRole } from "@/types/financial";
+import { UserRole } from "@/types/entity";
 
 const ACTIVE = "#00d48a";
 const INACTIVE = "#6b7280";
