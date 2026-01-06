@@ -1,16 +1,20 @@
+import { User } from "@/types/financial";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import API_URL from "./ApiUrl";
 
-const USER_KEY = "logged_user";
 
-export const saveUser = async (user: any) => {
-    await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
-};
-
-export const getUser = async () => {
-    const raw = await AsyncStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
+export const getUser = async () : Promise <User | null>  => {
+    const token = await AsyncStorage.getItem("user");
+    const res = await axios.get(`${API_URL}/user/auth/token`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+       
+      },
+    });
+    return res.data;
 };
 
 export const logout = async () => {
-    await AsyncStorage.removeItem(USER_KEY);
+    await AsyncStorage.removeItem("user");
 };

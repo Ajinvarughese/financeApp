@@ -1,3 +1,17 @@
+export interface UserRole {
+    USER: string;
+    ADMIN: string;
+}
+
+export interface User {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    age: number;
+    role: UserRole;
+}
+
 // src/types/financial.ts
 export interface Asset {
     id: number | string;

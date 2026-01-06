@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { saveUser } from "@/utils/auth";
 import AuthField from "@/components/AuthField";
 import { AUTH } from "@/constants/authTheme";
 import axios from "axios";
@@ -36,7 +35,7 @@ export default function Register() {
 
             const newUser = res.data;
             await AsyncStorage.setItem("user", JSON.stringify(newUser));
-            await saveUser(newUser);
+            
 
             router.replace("/(tabs)");
         } catch (error) {

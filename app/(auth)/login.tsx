@@ -9,6 +9,9 @@ import {
 import { useRouter } from "expo-router";
 import { AUTH } from "@/constants/authTheme";
 import AuthField from "@/components/AuthField";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import API_URL from "@/utils/ApiUrl";
+import axios from "axios";
 
 export default function Login() {
     const router = useRouter();
@@ -16,12 +19,26 @@ export default function Login() {
     const [password, setPassword] = useState("");
 
     const handleLogin = async () => {
-        if (!email || !password) {
-            Alert.alert("Missing Fields", "Email and password required");
-            return;
-        }
+        if(password.length < 6) return Alert.alert("Weak","Password must be at least 6 characters long");
+        const logData = {
+            email,
+            password
+        };
+        try {
+            const res = await axios.post(`${API_URL}/user/login`, logData, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
 
-        router.replace("/(tabs)"); // TEMP for UI test
+            const logUser = res.data;
+            await AsyncStorage.setItem("user", JSON.stringify(logUser));
+            
+
+            router.replace("/(tabs)");
+        } catch (error) {
+            return Alert.alert("Wrong Credentials", "Email or Password is wrong");
+        }
     };
 
     return (
