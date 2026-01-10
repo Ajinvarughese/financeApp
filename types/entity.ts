@@ -1,6 +1,12 @@
 export enum UserRole {
   USER = "USER",
-  ADMIN = "ADMIN",
+  ADMIN = "ADMIN"
+}
+
+export enum RiskClass {
+    SAFE = "SAFE",
+    RISKY = "RISKY",
+    NOT_RECOMMENDED = "NOT_RECOMMENDED"
 }
 
 export interface User {
@@ -24,16 +30,19 @@ export type Asset = {
     updatedAt: number;
 };
 
-export interface Liability {
-    id: number | string;
-    name: string;                 // required (used in UI)
-    amount?: number;
-    monthly_installment?: number;
-    dueDate?: string;
-    status?: "Active" | "Closed" | "Overdue" | string;
-    notes?: string;
-    [k: string]: any;
-}
+export type Liability = {
+    id: string;
+    name: string;
+    amount: number;
+    interest?: number;
+    months?: number;
+    expense: number;
+    note?: string;
+    riskClass: RiskClass;
+    aiResponse: string;
+    createdAt: number;
+    updatedAt: number;
+};
 
 export interface SuggestedAsset {
     name: string;
