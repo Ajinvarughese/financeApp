@@ -9,6 +9,18 @@ export enum RiskClass {
     NOT_RECOMMENDED = "NOT_RECOMMENDED"
 }
 
+export type Message = {
+    id?: number;
+    text: string;
+    textFrom : "USER" | "ASSISTANT";
+    userId: number;
+};
+
+export interface MessageRequest {
+    text: string;
+    userId: number;
+}
+
 export interface User {
     id: number;
     firstName: string;

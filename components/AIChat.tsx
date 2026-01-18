@@ -1,84 +1,174 @@
-import { useState } from "react";
+import { getUser } from "@/utils/auth";
+import { useEffect, useRef, useState } from "react";
 import {
     View,
-    Text,
     TextInput,
     TouchableOpacity,
     FlatList,
     StyleSheet,
+    Animated,
+    Platform,
 } from "react-native";
+import Markdown from "react-native-markdown-display";
+import { Message } from "@/types/entity";
+import { deleteChatLog, generateAiResponse, getChatLog } from "@/utils/api";
+import { Alert } from "react-native";
 
-type Message = {
-    id: string;
-    text: string;
-    from: "user" | "ai";
-};
 
 export default function AIChat() {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: "init",
-            text: "Hi 👋 I’m your finance assistant. Ask me about assets, liabilities, or risk.",
-            from: "ai",
-        },
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
+    const [isTyping, setIsTyping] = useState(false);
 
-    const sendMessage = () => {
-        if (!input.trim()) return;
+    const dotAnim = useRef(new Animated.Value(0)).current;
+
+    const handleDeleteChat = () => {
+        if (Platform.OS === "web") {
+            const confirmed = window.confirm(
+                "This will permanently delete your chat history."
+            );
+
+            if (confirmed) {
+                deleteChatLog();
+                setMessages([]);
+            }
+            return;
+        }
+
+        Alert.alert(
+            "Clear chat?",
+            "This will permanently delete your chat history.",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        await deleteChatLog();
+                        setMessages([]);
+                    },
+                },
+            ]
+        );
+    };
+
+
+
+    /* ---------------- LOAD CHAT HISTORY ---------------- */
+    const handleChatLog = async () => {
+        const logs = await getChatLog();
+        setMessages(logs ?? []);
+    };
+
+    useEffect(() => {
+        handleChatLog();
+    }, []);
+
+    /* ---------------- DOT ANIMATION ---------------- */
+    useEffect(() => {
+        if (!isTyping) return;
+
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(dotAnim, {
+                    toValue: 1,
+                    duration: 500,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(dotAnim, {
+                    toValue: 0,
+                    duration: 500,
+                    useNativeDriver: true,
+                }),
+            ])
+        ).start();
+    }, [isTyping]);
+
+    /* ---------------- SEND MESSAGE ---------------- */
+    const sendMessage = async () => {
+        if (!input.trim() || isTyping) return;
+
+        const user = await getUser();
 
         const userMsg: Message = {
             id: Date.now().toString(),
             text: input,
-            from: "user",
+            textFrom: "USER",
+            userId: user!.id,
         };
 
         setMessages((prev) => [...prev, userMsg]);
         setInput("");
+        setIsTyping(true);
 
-        // 🔹 Simulated AI response (replace later with real AI API)
-        setTimeout(() => {
+        try {
+            const res = await generateAiResponse({
+                text: userMsg.text,
+                userId: userMsg.userId,
+            });
+
             const aiMsg: Message = {
-                id: Date.now().toString() + "_ai",
-                text: generateReply(userMsg.text),
-                from: "ai",
+                id: (Date.now() + 1).toString(),
+                text: res.text,
+                textFrom: "ASSISTANT",
+                userId: userMsg.userId,
             };
+
             setMessages((prev) => [...prev, aiMsg]);
-        }, 600);
+        } finally {
+            setIsTyping(false);
+        }
     };
 
+    /* ---------------- UI ---------------- */
     return (
         <View style={styles.wrapper}>
-            {/* Messages */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={handleDeleteChat} style={styles.deleteBtn}>
+                    <Markdown style={{ body: styles.deleteText }}>
+                        Delete Chat 🗑️
+                    </Markdown>
+                </TouchableOpacity>
+            </View>
+
             <FlatList
                 data={messages}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) => item.id ?? index.toString()}
                 renderItem={({ item }) => (
                     <View
                         style={[
                             styles.bubble,
-                            item.from === "user"
+                            item.textFrom === "USER"
                                 ? styles.userBubble
                                 : styles.aiBubble,
                         ]}
                     >
-                        <Text
-                            style={[
-                                styles.text,
-                                item.from === "user"
-                                    ? styles.userText
-                                    : styles.aiText,
-                            ]}
+                        <Markdown
+                            style={{
+                                body:
+                                    item.textFrom === "USER"
+                                        ? styles.userText
+                                        : styles.aiText,
+                                strong: { fontWeight: "700" },
+                                bullet_list: { marginVertical: 6 },
+                            }}
                         >
                             {item.text}
-                        </Text>
+                        </Markdown>
                     </View>
                 )}
+                ListFooterComponent={
+                    isTyping ? (
+                        <View style={[styles.bubble, styles.aiBubble]}>
+                            <TypingDots anim={dotAnim} />
+                        </View>
+                    ) : null
+                }
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 10 }}
+                contentContainerStyle={{ paddingBottom: 12 }}
             />
 
-            {/* Input */}
+            {/* INPUT */}
             <View style={styles.inputBox}>
                 <TextInput
                     value={input}
@@ -86,85 +176,132 @@ export default function AIChat() {
                     placeholder="Ask about your finances..."
                     placeholderTextColor="#9aa8a6"
                     style={styles.input}
+                    multiline
+                    textAlignVertical="center"
                 />
-                <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}>
-                    <Text style={styles.sendText}>➤</Text>
+
+                <TouchableOpacity
+                    style={[
+                        styles.sendBtn,
+                        isTyping && { opacity: 0.6 },
+                    ]}
+                    onPress={sendMessage}
+                    disabled={isTyping}
+                >
+                    <Markdown style={{ body: styles.sendText }}>➤</Markdown>
                 </TouchableOpacity>
             </View>
         </View>
     );
 }
 
-/* ---------------- SIMPLE AI LOGIC ---------------- */
+/* ---------------- TYPING DOTS ---------------- */
 
-function generateReply(text: string) {
-    const q = text.toLowerCase();
+function TypingDots({ anim }: { anim: Animated.Value }) {
+    const opacity = anim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.3, 1],
+    });
 
-    if (q.includes("liability"))
-        return "High liabilities increase risk. Try keeping EMIs under 40% of income.";
-
-    if (q.includes("asset"))
-        return "Assets with stable income and low expenses improve financial health.";
-
-    if (q.includes("risk"))
-        return "Risk rises when debt and expenses exceed savings consistently.";
-
-    return "I can help analyze your assets, liabilities, and savings. Ask me anything!";
+    return (
+        <Animated.Text style={[styles.typingText, { opacity }]}>
+            ● ● ●
+        </Animated.Text>
+    );
 }
 
-/* ---------------- STYLES (MATCHES YOUR THEME) ---------------- */
+/* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
     wrapper: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.25)",
-        borderRadius: 18,
+        backgroundColor: "rgba(0,0,0,0.3)",
+        borderRadius: 20,
         padding: 12,
     },
 
+    header: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        marginBottom: 6,
+    },
+
+    deleteBtn: {
+        padding: 6,
+        borderRadius: 12,
+        backgroundColor: "rgba(255,255,255,0.08)",
+    },
+
+    deleteText: {
+        fontSize: 16,
+    },
+
+
     bubble: {
-        maxWidth: "80%",
+        maxWidth: "82%",
         padding: 14,
-        borderRadius: 16,
+        borderRadius: 18,
         marginBottom: 10,
     },
     aiBubble: {
-        backgroundColor: "rgba(0,212,138,0.15)",
+        backgroundColor: "rgba(0,212,138,0.18)",
         alignSelf: "flex-start",
-        borderTopLeftRadius: 4,
+        borderTopLeftRadius: 6,
     },
     userBubble: {
-        backgroundColor: "rgba(255,255,255,0.12)",
+        backgroundColor: "rgba(255,255,255,0.14)",
         alignSelf: "flex-end",
-        borderTopRightRadius: 4,
+        borderTopRightRadius: 6,
     },
 
-    text: { fontSize: 15, lineHeight: 20 },
-    aiText: { color: "#d5efe6" },
-    userText: { color: "#ffffff", fontWeight: "600" },
+    aiText: {
+        color: "#d5efe6",
+        fontSize: 15,
+        lineHeight: 21,
+    },
+    userText: {
+        color: "#ffffff",
+        fontSize: 15,
+        lineHeight: 21,
+        fontWeight: "600",
+    },
+
+    typingText: {
+        color: "#d5efe6",
+        fontSize: 18,
+        letterSpacing: 3,
+    },
 
     inputBox: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "rgba(255,255,255,0.08)",
+        backgroundColor: "rgba(255,255,255,0.1)",
         padding: 10,
-        borderRadius: 16,
+        borderRadius: 18,
         marginTop: 8,
     },
     input: {
         flex: 1,
         color: "#fff",
-        paddingHorizontal: 10,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
         fontSize: 15,
+        minHeight: 34,        
     },
+
     sendBtn: {
         backgroundColor: "#00d48a",
-        padding: 12,
-        borderRadius: 14,
-        marginLeft: 6,
+        paddingVertical: 12,
+        paddingHorizontal: 18,   // 🔥 wider button
+        borderRadius: 16,
+        marginLeft: 8,
+        minWidth: 52,            // 🔥 consistent width
+        alignItems: "center",
+        justifyContent: "center",
     },
+
     sendText: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: "900",
         color: "#04211b",
     },
