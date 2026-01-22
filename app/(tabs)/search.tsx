@@ -18,6 +18,8 @@ import { icons } from "@/constants/icons";
 import { fetchAssets } from "@/utils/api";
 import { getLiabilities } from "@/utils/liabilities";
 import AIChat from "@/components/AIChat";
+import { Asset, Liability, RiskClass } from "@/types/entity";
+import Markdown from "react-native-markdown-display";
 
 type Tab = "assets" | "liabilities" | "ai";
 
@@ -40,7 +42,7 @@ export default function Records() {
             if (activeTab === "assets") {
                 setData(await fetchAssets());
             } else {
-                setData(await getLiabilities());
+                setData((await getLiabilities()).reverse());
             }
         } catch {
             setData([]);
@@ -59,31 +61,23 @@ export default function Records() {
 
     /* ---------------- ASSET CARD ---------------- */
 
-    const renderAsset = (item: any) => {
-        const savings = item.salary - item.expenses - item.debt;
-        const status =
-            savings > item.salary * 0.3
-                ? { label: "Healthy", color: "#00d48a" }
-                : savings > 0
-                    ? { label: "Moderate", color: "#facc15" }
-                    : { label: "Risk", color: "#ff6b6b" };
-
+    const renderAsset = (item: Asset) => {
+        const savings = Number(item.income - item.expense)
+        console.log(item)
         return (
             <TouchableOpacity
                 style={styles.card}
                 onPress={() => toggleExpand(item.id)}
             >
                 <View style={styles.cardTop}>
-                    <Text style={styles.cardTitle}>{item.job}</Text>
-                    <StatusBadge {...status} />
+                    <Text style={styles.cardTitle}>{item.name}</Text>
                 </View>
 
-                <Text style={styles.cardSub}>Salary ₹{item.salary}</Text>
+                <Text style={styles.cardSub}>Income ₹{item.income}</Text>
 
                 {expandedId === item.id && (
                     <View style={styles.expandBox}>
-                        <Row label="Expenses" value={`₹${item.expenses}`} />
-                        <Row label="Debt" value={`₹${item.debt}`} />
+                        <Row label="Expenses" value={`₹${item.expense}`} />
                         <Row label="Monthly Savings" value={`₹${savings}`} />
                         {item.notes && (
                             <Text style={styles.notes}>{item.notes}</Text>
@@ -96,11 +90,11 @@ export default function Records() {
 
     /* ---------------- LIABILITY CARD ---------------- */
 
-    const renderLiability = (item: any) => {
+    const renderLiability = (item: Liability) => {
         const status =
-            item.riskPercent > 45
-                ? { label: "Critical", color: "#ff6b6b" }
-                : item.riskPercent > 30
+            item.riskClass == RiskClass.NOT_RECOMMENDED
+                ? { label: "Not recommended", color: "#ff6b6b" }
+                : item.riskClass == RiskClass.RISKY
                     ? { label: "Risky", color: "#facc15" }
                     : { label: "Safe", color: "#00d48a" };
 
@@ -125,9 +119,22 @@ export default function Records() {
                             value={`${item.months} months`}
                         />
                         <Row
-                            label="Salary Used"
-                            value={`${item.riskPercent}%`}
+                            label="EMI"
+                            value={`${item.emi}%`}
                         />
+                        {item.note && (
+                            <Text style={styles.notes}>{item.note}</Text>
+                        )}
+
+                        <View style={styles.aiBox}>
+                            <Text style={styles.aiTitle}>AI Analysis</Text>
+
+                            <Markdown
+                                style={markdownStyles}
+                            >
+                                {item.aiResponse}
+                            </Markdown>
+                        </View>
                     </View>
                 )}
             </TouchableOpacity>
@@ -311,4 +318,58 @@ const styles = StyleSheet.create({
         color: "#9aa8a6",
         fontSize: 13,
     },
+    aiBox: {
+        marginTop: 12,
+        backgroundColor: "rgba(0,212,138,0.08)",
+        padding: 12,
+        borderRadius: 12,
+    },
+    aiTitle: {
+        color: "#00d48a",
+        fontWeight: "800",
+        marginBottom: 4,
+    },
+    aiText: {
+        color: "#e5fff6",
+        fontSize: 13,
+        lineHeight: 18,
+    },
 });
+
+const markdownStyles = {
+    body: {
+        color: "#e5fff6",
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    strong: {
+        fontWeight: "800",
+        color: "#ffffff",
+    },
+    bullet_list: {
+        marginVertical: 6,
+    },
+    list_item: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+    },
+    bullet_list_icon: {
+        color: "#00d48a",
+        marginRight: 6,
+    },
+    heading1: {
+        fontSize: 16,
+        fontWeight: "900",
+        color: "#00d48a",
+        marginBottom: 6,
+    },
+    heading2: {
+        fontSize: 15,
+        fontWeight: "800",
+        color: "#00d48a",
+        marginBottom: 4,
+    },
+    paragraph: {
+        marginBottom: 6,
+    },
+};

@@ -63,7 +63,7 @@ export default function TabsLayout() {
             />
 
             <Tabs.Screen
-                name="liability"
+                name="records"
                 options={{
                     tabBarIcon: ({ focused }) => (
                         <TabIcon focused={focused} icon={icons.detail} label="Records" />

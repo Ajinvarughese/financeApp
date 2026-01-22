@@ -1,56 +1,48 @@
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-// import { getUser } from "./auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getUser } from "./auth";
+import { Liability } from "@/types/entity";
+import axios from "axios";
+import API_URL from "./ApiUrl";
 
-// /* ---------------- TYPES ---------------- */
-// export type Liability = {
-//     id: string;
-//     name: string;
-//     amount: number;
-//     interest?: number;
-//     months?: number;
-//     expense: number;
-//     riskPercent: number;
-//     createdAt: number;
-//     updatedAt: number;
-// };
 
-// /* ---------------- SAVE LIABILITY ---------------- */
-// export async function saveLiability(
-//     data: Omit<Liability, "id" | "createdAt">
-// ) {
-//     const user = await getUser();
-//     if (!user?.email) return;
+/* ---------------- SAVE LIABILITY ---------------- */
+/* ---------------- SAVE LIABILITY ---------------- */
+export async function saveLiability(
+    data: Omit<Liability, "id" | "createdAt" | "updatedAt" | "riskClass" | "aiResponse">
+): Promise<Liability> {
+    const user = await getUser();
 
-//     const key = `liabilities_${user.email}`;
+    const param = {
+        name: data.name,
+        amount: data.amount,
+        interest: data.interest,
+        months: data.months,
+        emi: data.emi,
+        note: data.note,
+        user: {
+            id: user?.id
+        }
+    };
 
-//     const raw = await AsyncStorage.getItem(key);
-//     const list: Liability[] = raw ? JSON.parse(raw) : [];
+    const res = await axios.post(
+        `${API_URL}/liability`,
+        param,
+        { headers: { "Content-Type": "application/json" } }
+    );
 
-//     const newItem: Liability = {
-//         id: Date.now().toString(),
-//         createdAt: Date.now(),
-//         ...data,
-//     };
+    // 🔥 THIS IS THE KEY LINE
+    return res.data;
+}
 
-//     list.unshift(newItem);
-//     await AsyncStorage.setItem(key, JSON.stringify(list));
-// }
 
-// /* ---------------- GET LIABILITIES (USER ONLY) ---------------- */
-// export async function getLiabilities(): Promise<Liability[]> {
-//     const user = await getUser();
-//     if (!user?.email) return [];
+/* ---------------- GET LIABILITIES (USER ONLY) ---------------- */
+export async function getLiabilities(): Promise<Liability[]> {
+    const token = await AsyncStorage.getItem("user");
+    const res = await axios.get(`${API_URL}/liability/user`, { headers: { "Authorization": `Bearer ${token}` } });
+    return res.data;
+}
 
-//     const key = `liabilities_${user.email}`;
-//     const raw = await AsyncStorage.getItem(key);
-
-//     return raw ? JSON.parse(raw) : [];
-// }
-
-// /* ---------------- CLEAR (OPTIONAL) ---------------- */
-// export async function clearLiabilities() {
-//     const user = await getUser();
-//     if (!user?.email) return;
-
-//     await AsyncStorage.removeItem(`liabilities_${user.email}`);
-// }
+/* ---------------- CLEAR (OPTIONAL) ---------------- */
+export async function deleteLiability(id: number) {
+    await axios.delete(`${API_URL}/liability/${id}`);
+}

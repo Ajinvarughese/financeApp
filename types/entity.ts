@@ -32,11 +32,10 @@ export interface User {
 
 export type Asset = {
     id: string;
-    source: string;
+    name: string;
     income: number;
-    expenses: number;
+    expense: number;
     user: User;
-    debt: number;
     notes?: string;
     createdAt: number;
     updatedAt: number;
@@ -48,7 +47,7 @@ export type Liability = {
     amount: number;
     interest?: number;
     months?: number;
-    expense: number;
+    emi: number;
     note?: string;
     riskClass: RiskClass;
     aiResponse: string;

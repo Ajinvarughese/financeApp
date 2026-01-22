@@ -8,11 +8,14 @@ import {
     StyleSheet,
     Animated,
     Platform,
+    Image,
+    Text,
 } from "react-native";
 import Markdown from "react-native-markdown-display";
 import { Message } from "@/types/entity";
 import { deleteChatLog, generateAiResponse, getChatLog } from "@/utils/api";
 import { Alert } from "react-native";
+import Delete from "../assets/icons/delete.png";
 
 
 export default function AIChat() {
@@ -124,10 +127,15 @@ export default function AIChat() {
     return (
         <View style={styles.wrapper}>
             <View style={styles.header}>
+                <View style={styles.headerLeft}>
+                    <Image alt="logo" source={require("../assets/icons/logoo.png")} style={styles.aiIcon} />
+                    <Text style={styles.aiName}>Financia AI</Text>
+                </View>
                 <TouchableOpacity onPress={handleDeleteChat} style={styles.deleteBtn}>
-                    <Markdown style={{ body: styles.deleteText }}>
-                        Delete Chat 🗑️
-                    </Markdown>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                        <Image source={Delete} style={{ width: 16, height: 16 }} />
+                        <Text style={styles.deleteText}>Delete Chat</Text>
+                    </View>
                 </TouchableOpacity>
             </View>
 
@@ -223,17 +231,22 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: "row",
         justifyContent: "flex-end",
-        marginBottom: 6,
+        marginBottom: 8,
+        backgroundColor: "rgba(255,255,255,0.08)",
+        borderRadius: 12,
+        padding: 10,
     },
 
     deleteBtn: {
-        padding: 6,
+        padding: 8,
         borderRadius: 12,
-        backgroundColor: "rgba(255,255,255,0.08)",
+        backgroundColor: "rgba(255,0,0,0.22)",
     },
 
     deleteText: {
-        fontSize: 16,
+        fontSize: 14,
+        color: "#fff",
+        fontWeight: "600",
     },
 
 
@@ -305,4 +318,28 @@ const styles = StyleSheet.create({
         fontWeight: "900",
         color: "#04211b",
     },
+
+    headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+},
+
+aiIcon: {
+    width: 28,
+    height: 28,
+    resizeMode: "contain",
+    margin: 7,
+    transform: [{ scale: 3 }],
+},
+
+aiName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#e6fff6",
+    letterSpacing: 0.3,
+},
+
+
 });
