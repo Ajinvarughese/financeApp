@@ -6,6 +6,9 @@ import {
     StyleSheet,
     TouchableOpacity,
 } from "react-native";
+import AdminSidebar from "@/components/AdminSidebar";
+
+/* ---------------- MOCK DATA ---------------- */
 
 const riskUsers = [
     {
@@ -35,7 +38,9 @@ const riskUsers = [
 ];
 
 export default function RiskUsers() {
-    const [filter, setFilter] = useState<"ALL" | "CRITICAL" | "WARNING">("ALL");
+    const [filter, setFilter] = useState<
+        "ALL" | "CRITICAL" | "WARNING"
+    >("ALL");
 
     const filteredUsers = riskUsers.filter((u) => {
         if (filter === "CRITICAL") return u.risk >= 60;
@@ -44,103 +49,123 @@ export default function RiskUsers() {
     });
 
     return (
-        <View style={styles.root}>
-            {/* HEADER */}
-            <Text style={styles.title}>High Risk Users</Text>
-            <Text style={styles.subtitle}>
-                AI-identified users with potential financial instability
-            </Text>
+        <AdminSidebar prop="risk">
+            <View style={styles.root}>
+                {/* HEADER */}
+                <View style={styles.header}>
+                    <Text style={styles.title}>High Risk Users</Text>
+                    <Text style={styles.subtitle}>
+                        AI-identified users with potential financial instability
+                    </Text>
+                </View>
 
-            {/* FILTERS */}
-            <View style={styles.filters}>
-                {["ALL", "WARNING", "CRITICAL"].map((f) => (
-                    <TouchableOpacity
-                        key={f}
-                        onPress={() => setFilter(f as any)}
-                        style={[
-                            styles.filterBtn,
-                            filter === f && styles.filterActive,
-                        ]}
-                    >
-                        <Text
+                {/* FILTERS */}
+                <View style={styles.filters}>
+                    {["ALL", "WARNING", "CRITICAL"].map((f) => (
+                        <TouchableOpacity
+                            key={f}
+                            onPress={() => setFilter(f as any)}
                             style={[
-                                styles.filterText,
-                                filter === f && styles.filterTextActive,
+                                styles.filterBtn,
+                                filter === f && styles.filterActive,
                             ]}
                         >
-                            {f}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+                            <Text
+                                style={[
+                                    styles.filterText,
+                                    filter === f &&
+                                        styles.filterTextActive,
+                                ]}
+                            >
+                                {f}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
 
-            {/* AI INSIGHT */}
-            <View style={styles.aiCard}>
-                <Text style={styles.aiTitle}>AI Risk Insight</Text>
-                <Text style={styles.aiText}>
-                    ⚠️ {filteredUsers.length} users show elevated debt risk.
-                    Proactive alerts can reduce default probability by 28%.
-                </Text>
-            </View>
+                {/* AI INSIGHT */}
+                <View style={styles.aiCard}>
+                    <Text style={styles.aiTitle}>AI Risk Insight</Text>
+                    <Text style={styles.aiText}>
+                        ⚠️ {filteredUsers.length} users show elevated
+                        debt risk. Proactive alerts can reduce default
+                        probability by 28%.
+                    </Text>
+                </View>
 
-            {/* USERS */}
-            <FlatList
-                data={filteredUsers}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={{ paddingBottom: 40 }}
-                renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <View style={styles.headerRow}>
-                            <View>
-                                <Text style={styles.name}>{item.name}</Text>
-                                <Text style={styles.email}>{item.email}</Text>
+                {/* USERS LIST */}
+                <FlatList
+                    data={filteredUsers}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={{ paddingBottom: 40 }}
+                    renderItem={({ item }) => (
+                        <View style={styles.card}>
+                            <View style={styles.headerRow}>
+                                <View>
+                                    <Text style={styles.name}>
+                                        {item.name}
+                                    </Text>
+                                    <Text style={styles.email}>
+                                        {item.email}
+                                    </Text>
+                                </View>
+
+                                <RiskBadge risk={item.risk} />
                             </View>
 
-                            <RiskBadge risk={item.risk} />
-                        </View>
+                            {/* RISK BAR */}
+                            <View style={styles.riskBarBg}>
+                                <View
+                                    style={[
+                                        styles.riskBarFill,
+                                        {
+                                            width: `${item.risk}%`,
+                                            backgroundColor:
+                                                item.risk >= 60
+                                                    ? "#ff6b6b"
+                                                    : "#facc15",
+                                        },
+                                    ]}
+                                />
+                            </View>
 
-                        {/* RISK BAR */}
-                        <View style={styles.riskBarBg}>
-                            <View
-                                style={[
-                                    styles.riskBarFill,
-                                    {
-                                        width: `${item.risk}%`,
-                                        backgroundColor:
-                                            item.risk >= 60
-                                                ? "#ff6b6b"
-                                                : "#facc15",
-                                    },
-                                ]}
-                            />
-                        </View>
-
-                        <Text style={styles.riskText}>
-                            Risk Score: {item.risk}%
-                        </Text>
-
-                        <Text style={styles.reason}>{item.reason}</Text>
-
-                        <View style={styles.meta}>
-                            <Text style={styles.metaText}>
-                                Active Loans: {item.loans}
+                            <Text style={styles.riskText}>
+                                Risk Score: {item.risk}%
                             </Text>
-                        </View>
 
-                        {/* ACTIONS */}
-                        <View style={styles.actions}>
-                            <TouchableOpacity style={styles.notifyBtn}>
-                                <Text style={styles.notifyText}>Notify User</Text>
-                            </TouchableOpacity>
+                            <Text style={styles.reason}>
+                                {item.reason}
+                            </Text>
 
-                            <TouchableOpacity style={styles.reviewBtn}>
-                                <Text style={styles.reviewText}>Review</Text>
-                            </TouchableOpacity>
+                            <View style={styles.meta}>
+                                <Text style={styles.metaText}>
+                                    Active Loans: {item.loans}
+                                </Text>
+                            </View>
+
+                            {/* ACTIONS */}
+                            <View style={styles.actions}>
+                                <TouchableOpacity
+                                    style={styles.notifyBtn}
+                                >
+                                    <Text style={styles.notifyText}>
+                                        Notify User
+                                    </Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={styles.reviewBtn}
+                                >
+                                    <Text style={styles.reviewText}>
+                                        Review
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
-                )}
-            />
-        </View>
+                    )}
+                />
+            </View>
+        </AdminSidebar>
     );
 }
 
@@ -166,6 +191,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#071013",
         padding: 20,
+    },
+    header: {
+      paddingLeft: 50  
     },
 
     title: {

@@ -12,11 +12,12 @@ import {
     UIManager,
 } from "react-native";
 
+import Delete from "../../assets/icons/delete.png";
+
 import { images } from "@/constants/images";
 import { icons } from "@/constants/icons";
-
-import { fetchAssets } from "@/utils/api";
-import { getLiabilities } from "@/utils/liabilities";
+import { deleteAsset, fetchAssets } from "@/utils/assets";
+import { deleteLiability, getLiabilities } from "@/utils/liabilities";
 import AIChat from "@/components/AIChat";
 import { Asset, Liability, RiskClass } from "@/types/entity";
 import Markdown from "react-native-markdown-display";
@@ -59,29 +60,56 @@ export default function Records() {
         setExpandedId(expandedId === id ? null : id);
     };
 
+    const handleDeleteAsset = async (id: number) => {
+        await deleteAsset(id);
+        loadData();
+    };
+
+    const handleDeleteLiability = async (id: number) => {
+        await deleteLiability(id);
+        loadData();
+    };
+
     /* ---------------- ASSET CARD ---------------- */
 
     const renderAsset = (item: Asset) => {
-        const savings = Number(item.income - item.expense)
-        console.log(item)
+        const savings = Number(item.income) - Number(item.expense);
+
         return (
             <TouchableOpacity
                 style={styles.card}
                 onPress={() => toggleExpand(item.id)}
+                activeOpacity={0.9}
             >
-                <View style={styles.cardTop}>
-                    <Text style={styles.cardTitle}>{item.name}</Text>
-                </View>
+                <Text style={styles.cardTitle}>{item.name}</Text>
 
-                <Text style={styles.cardSub}>Income ₹{item.income}</Text>
+                <Text style={styles.cardSub}>
+                    Income:{" "}
+                    <Text style={styles.incomeText}>₹{item.income}</Text>
+                </Text>
 
                 {expandedId === item.id && (
                     <View style={styles.expandBox}>
-                        <Row label="Expenses" value={`₹${item.expense}`} />
-                        <Row label="Monthly Savings" value={`₹${savings}`} />
+                        <Row
+                            label="Monthly Savings"
+                            value={`₹${savings}`}
+                            valueColor="#00d48a"
+                        />
+                        <Row
+                            label="Expenses"
+                            value={`-₹${item.expense}`}
+                            valueColor="#ff4d4d"
+                        />
+
                         {item.notes && (
                             <Text style={styles.notes}>{item.notes}</Text>
                         )}
+
+                        <DeleteButton
+                            onPress={() =>
+                                handleDeleteAsset(Number(item.id))
+                            }
+                        />
                     </View>
                 )}
             </TouchableOpacity>
@@ -92,11 +120,11 @@ export default function Records() {
 
     const renderLiability = (item: Liability) => {
         const status =
-            item.riskClass == RiskClass.NOT_RECOMMENDED
+            item.riskClass === RiskClass.NOT_RECOMMENDED
                 ? { label: "Not recommended", color: "#ff6b6b" }
-                : item.riskClass == RiskClass.RISKY
-                    ? { label: "Risky", color: "#facc15" }
-                    : { label: "Safe", color: "#00d48a" };
+                : item.riskClass === RiskClass.RISKY
+                ? { label: "Risky", color: "#facc15" }
+                : { label: "Safe", color: "#00d48a" };
 
         return (
             <TouchableOpacity
@@ -118,23 +146,24 @@ export default function Records() {
                             label="Duration"
                             value={`${item.months} months`}
                         />
-                        <Row
-                            label="EMI"
-                            value={`${item.emi}%`}
-                        />
+                        <Row label="EMI" value={`₹${item.emi}`} />
+
                         {item.note && (
                             <Text style={styles.notes}>{item.note}</Text>
                         )}
 
                         <View style={styles.aiBox}>
                             <Text style={styles.aiTitle}>AI Analysis</Text>
-
-                            <Markdown
-                                style={markdownStyles}
-                            >
+                            <Markdown style={markdownStyles}>
                                 {item.aiResponse}
                             </Markdown>
                         </View>
+
+                        <DeleteButton
+                            onPress={() =>
+                                handleDeleteLiability(Number(item.id))
+                            }
+                        />
                     </View>
                 )}
             </TouchableOpacity>
@@ -152,13 +181,11 @@ export default function Records() {
             <Image source={images.bg} style={styles.bg} />
 
             <View style={styles.container}>
-                {/* Header */}
                 <View style={styles.header}>
                     <Image source={icons.logo} style={styles.logo} />
                     <Text style={styles.title}>Records</Text>
                 </View>
 
-                {/* Tabs */}
                 <View style={styles.tabs}>
                     {(["assets", "liabilities", "ai"] as Tab[]).map((tab) => (
                         <Text
@@ -174,16 +201,12 @@ export default function Records() {
                     ))}
                 </View>
 
-                {/* AI TAB */}
                 {activeTab === "ai" ? (
                     <AIChat />
                 ) : (
                     <>
                         {loading && (
-                            <ActivityIndicator
-                                size="large"
-                                color="#00d48a"
-                            />
+                            <ActivityIndicator size="large" color="#00d48a" />
                         )}
 
                         {!loading && data.length === 0 && (
@@ -193,11 +216,9 @@ export default function Records() {
                         )}
 
                         <FlatList
-                            key={activeTab}
                             data={data}
                             renderItem={renderItem}
                             keyExtractor={(item) => item.id}
-                            showsVerticalScrollIndicator={false}
                             contentContainerStyle={{ paddingBottom: 140 }}
                         />
                     </>
@@ -207,7 +228,14 @@ export default function Records() {
     );
 }
 
-/* ---------------- SMALL COMPONENTS ---------------- */
+/* ---------------- REUSABLE COMPONENTS ---------------- */
+
+const DeleteButton = ({ onPress }: any) => (
+    <TouchableOpacity onPress={onPress} style={styles.deleteBtn}>
+        <Image source={Delete} style={{ width: 16, height: 16 }} />
+        <Text style={styles.deleteText}>Delete</Text>
+    </TouchableOpacity>
+);
 
 const StatusBadge = ({ label, color }: any) => (
     <View style={[styles.badge, { backgroundColor: color + "22" }]}>
@@ -215,10 +243,12 @@ const StatusBadge = ({ label, color }: any) => (
     </View>
 );
 
-const Row = ({ label, value }: any) => (
+const Row = ({ label, value, valueColor = "#e5fff6" }: any) => (
     <View style={styles.row}>
         <Text style={styles.rowLabel}>{label}</Text>
-        <Text style={styles.rowValue}>{value}</Text>
+        <Text style={[styles.rowValue, { color: valueColor }]}>
+            {value}
+        </Text>
     </View>
 );
 
@@ -232,12 +262,7 @@ const styles = StyleSheet.create({
 
     header: { alignItems: "center", marginBottom: 20 },
     logo: { width: 46, height: 42 },
-    title: {
-        color: "#d5efe6",
-        fontSize: 20,
-        fontWeight: "900",
-        marginTop: 8,
-    },
+    title: { color: "#d5efe6", fontSize: 20, fontWeight: "900" },
 
     tabs: {
         flexDirection: "row",
@@ -254,45 +279,33 @@ const styles = StyleSheet.create({
         color: "#9aa8a6",
         fontWeight: "800",
     },
-    tabActive: {
-        backgroundColor: "#00d48a",
-        color: "#041F1A",
-    },
+    tabActive: { backgroundColor: "#00d48a", color: "#041F1A" },
 
-    empty: {
-        textAlign: "center",
-        color: "#9aa8a6",
-        marginTop: 40,
-    },
+    empty: { textAlign: "center", color: "#9aa8a6", marginTop: 40 },
 
     card: {
         backgroundColor: "rgba(255,255,255,0.05)",
         borderRadius: 18,
         padding: 16,
         marginBottom: 14,
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.05)",
     },
+
     cardTop: {
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center",
     },
-    cardTitle: {
-        color: "#fff",
-        fontWeight: "800",
-        fontSize: 16,
-    },
-    cardSub: {
-        color: "#cfe3dc",
-        marginTop: 6,
-    },
+
+    cardTitle: { color: "#fff", fontWeight: "800", fontSize: 16 },
+    cardSub: { color: "#cfe3dc", marginTop: 6 },
+    incomeText: { color: "#00d48a", fontWeight: "800" },
 
     expandBox: {
         marginTop: 12,
         backgroundColor: "rgba(0,0,0,0.25)",
         padding: 12,
+        paddingBottom: 52,
         borderRadius: 12,
+        position: "relative",
     },
 
     row: {
@@ -301,75 +314,40 @@ const styles = StyleSheet.create({
         marginBottom: 6,
     },
     rowLabel: { color: "#9aa8a6" },
-    rowValue: { color: "#e5fff6", fontWeight: "700" },
+    rowValue: { fontWeight: "700" },
 
-    badge: {
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 10,
-    },
-    badgeText: {
-        fontSize: 12,
-        fontWeight: "800",
-    },
+    badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+    badgeText: { fontSize: 12, fontWeight: "800" },
 
-    notes: {
-        marginTop: 8,
-        color: "#9aa8a6",
-        fontSize: 13,
-    },
+    notes: { marginTop: 8, color: "#9aa8a6" },
+
     aiBox: {
         marginTop: 12,
         backgroundColor: "rgba(0,212,138,0.08)",
         padding: 12,
         borderRadius: 12,
     },
-    aiTitle: {
-        color: "#00d48a",
-        fontWeight: "800",
-        marginBottom: 4,
+    aiTitle: { color: "#00d48a", fontWeight: "800" },
+
+    deleteBtn: {
+        position: "absolute",
+        bottom: 10,
+        right: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 10,
+        backgroundColor: "rgba(255,0,0,0.22)",
     },
-    aiText: {
-        color: "#e5fff6",
+    deleteText: {
+        color: "#fff",
+        fontWeight: "700",
         fontSize: 13,
-        lineHeight: 18,
     },
 });
 
 const markdownStyles = {
-    body: {
-        color: "#e5fff6",
-        fontSize: 14,
-        lineHeight: 20,
-    },
-    strong: {
-        fontWeight: "800",
-        color: "#ffffff",
-    },
-    bullet_list: {
-        marginVertical: 6,
-    },
-    list_item: {
-        flexDirection: "row",
-        alignItems: "flex-start",
-    },
-    bullet_list_icon: {
-        color: "#00d48a",
-        marginRight: 6,
-    },
-    heading1: {
-        fontSize: 16,
-        fontWeight: "900",
-        color: "#00d48a",
-        marginBottom: 6,
-    },
-    heading2: {
-        fontSize: 15,
-        fontWeight: "800",
-        color: "#00d48a",
-        marginBottom: 4,
-    },
-    paragraph: {
-        marginBottom: 6,
-    },
+    body: { color: "#e5fff6", fontSize: 14, lineHeight: 20 },
 };

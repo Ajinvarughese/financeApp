@@ -13,9 +13,7 @@ export default function RootLayout() {
             if(await AsyncStorage.getItem("user")) {
                 const user = await getUser(); 
                 try {
-                    if (user?.role === UserRole.ADMIN) {
-                        router.replace("/(admin)/dashboard");
-                    } else {
+                    if (user?.role === UserRole.USER) {
                         router.replace("/(tabs)");
                     }
                 } catch (error) {

@@ -7,6 +7,7 @@ import {
     StyleSheet,
     TextInput,
 } from "react-native";
+import AdminSidebar from "@/components/AdminSidebar";
 
 const initialUsers = [
     { id: "1", name: "Ajin", email: "ajin@mail.com", role: "USER", status: "ACTIVE" },
@@ -33,9 +34,9 @@ export default function AdminUsers() {
             prev.map((u) =>
                 u.id === id
                     ? {
-                        ...u,
-                        status: u.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE",
-                    }
+                          ...u,
+                          status: u.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE",
+                      }
                     : u
             )
         );
@@ -46,83 +47,87 @@ export default function AdminUsers() {
     };
 
     return (
-        <View style={styles.root}>
-            <Text style={styles.title}>User Management</Text>
+        <AdminSidebar prop="users">
+            <View style={styles.root}>
+                <View style={{paddingLeft: 40}}>
+                    <Text style={styles.title}>User Management</Text>
+                </View>
 
-            {/* SEARCH */}
-            <TextInput
-                placeholder="Search users by name or email"
-                placeholderTextColor="#9aa8a6"
-                style={styles.search}
-                value={query}
-                onChangeText={setQuery}
-            />
+                {/* SEARCH */}
+                <TextInput
+                    placeholder="Search users by name or email"
+                    placeholderTextColor="#9aa8a6"
+                    style={styles.search}
+                    value={query}
+                    onChangeText={setQuery}
+                />
 
-            {/* FILTER */}
-            <View style={styles.filters}>
-                {["ALL", "USER", "ADMIN"].map((f) => (
-                    <TouchableOpacity
-                        key={f}
-                        onPress={() => setFilter(f as any)}
-                        style={[
-                            styles.filterBtn,
-                            filter === f && styles.filterActive,
-                        ]}
-                    >
-                        <Text
+                {/* FILTER */}
+                <View style={styles.filters}>
+                    {["ALL", "USER", "ADMIN"].map((f) => (
+                        <TouchableOpacity
+                            key={f}
+                            onPress={() => setFilter(f as any)}
                             style={[
-                                styles.filterText,
-                                filter === f && styles.filterTextActive,
+                                styles.filterBtn,
+                                filter === f && styles.filterActive,
                             ]}
                         >
-                            {f}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+                            <Text
+                                style={[
+                                    styles.filterText,
+                                    filter === f && styles.filterTextActive,
+                                ]}
+                            >
+                                {f}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
 
-            {/* USERS LIST */}
-            <FlatList
-                data={filteredUsers}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={{ paddingBottom: 40 }}
-                renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <View style={styles.info}>
-                            <Text style={styles.name}>{item.name}</Text>
-                            <Text style={styles.email}>{item.email}</Text>
+                {/* USERS LIST */}
+                <FlatList
+                    data={filteredUsers}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={{ paddingBottom: 40 }}
+                    renderItem={({ item }) => (
+                        <View style={styles.card}>
+                            <View style={styles.info}>
+                                <Text style={styles.name}>{item.name}</Text>
+                                <Text style={styles.email}>{item.email}</Text>
 
-                            <View style={styles.badges}>
-                                <Badge label={item.role} />
-                                <StatusBadge status={item.status} />
+                                <View style={styles.badges}>
+                                    <Badge label={item.role} />
+                                    <StatusBadge status={item.status} />
+                                </View>
                             </View>
+
+                            {item.role !== "ADMIN" && (
+                                <View style={styles.actions}>
+                                    <TouchableOpacity
+                                        style={styles.suspendBtn}
+                                        onPress={() => toggleSuspend(item.id)}
+                                    >
+                                        <Text style={styles.suspendText}>
+                                            {item.status === "ACTIVE"
+                                                ? "Suspend"
+                                                : "Activate"}
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={styles.deleteBtn}
+                                        onPress={() => deleteUser(item.id)}
+                                    >
+                                        <Text style={styles.deleteText}>Delete</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
                         </View>
-
-                        {item.role !== "ADMIN" && (
-                            <View style={styles.actions}>
-                                <TouchableOpacity
-                                    style={styles.suspendBtn}
-                                    onPress={() => toggleSuspend(item.id)}
-                                >
-                                    <Text style={styles.suspendText}>
-                                        {item.status === "ACTIVE"
-                                            ? "Suspend"
-                                            : "Activate"}
-                                    </Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.deleteBtn}
-                                    onPress={() => deleteUser(item.id)}
-                                >
-                                    <Text style={styles.deleteText}>Delete</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    </View>
-                )}
-            />
-        </View>
+                    )}
+                />
+            </View>
+        </AdminSidebar>
     );
 }
 
@@ -166,6 +171,7 @@ const styles = StyleSheet.create({
         padding: 14,
         borderRadius: 14,
         color: "#fff",
+        marginTop: 30,
         marginBottom: 14,
     },
 

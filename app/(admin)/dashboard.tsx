@@ -1,8 +1,9 @@
-import { UserRole } from "@/types/entity";
-import { getUser, logout } from "@/utils/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import AdminSidebar from "@/components/AdminSidebar";
+import { User } from "@/types/entity";
+import { getUsers } from "@/utils/adminApi";
+import { logout } from "@/utils/auth";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useEffect } from "react";
 import {
     View,
     Text,
@@ -16,75 +17,116 @@ import { LineChart } from "react-native-chart-kit";
 const { width } = Dimensions.get("window");
 
 export default function AdminDashboard() {
-    const router = useRouter(); 
-    const handleLogout = async () => {
-        await logout();               
-        router.replace("/(auth)/login"); 
+    const router = useRouter();
+    const [userCount, setUserCount] = React.useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    const currentMonth = new Date().getMonth(); // 0 = Jan
+    const chartLabels = labels.slice(currentMonth + 1);
+    const chartData = userCount.slice(currentMonth + 1);
+    const getUsersCount = async () => {
+        const users = await getUsers(); // User[]
+
+        const currentYear = new Date().getFullYear();
+
+        // Initialize months Jan(0) → Dec(11)
+        const monthlyCounts = Array(12).fill(0);
+
+        users.forEach((user) => {
+            if (!user.createdAt) return;
+
+            const date = new Date(user.createdAt);
+
+            if (date.getFullYear() === currentYear) {
+                const month = date.getMonth(); // 0 - 11
+                monthlyCounts[month]++;
+            }
+        });
+
+        setUserCount(monthlyCounts);
     };
+
+    useFocusEffect(
+        useCallback(() => {
+            getUsersCount();
+        }, [])
+    );
+
     return (
-        <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 40 }}>
-            {/* HERO */}
-            <View style={styles.hero}>
-                <View>
-                    <Text style={styles.heroTitle}>Admin Control Center</Text>
+            <ScrollView
+                style={styles.root}
+                contentContainerStyle={{ paddingBottom: 40 }}
+            >
+                {/* HERO */}
+                <View style={styles.hero}>
+                    <Text style={styles.heroTitle}>
+                        Admin Control Center
+                    </Text>
                     <Text style={styles.heroSub}>
                         Real-time system overview & risk intelligence
                     </Text>
                 </View>
-                <View>
-                    <ActionBtn title="Logout" cruicial onPress={handleLogout} />
+
+                {/* KPI STRIP */}
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.kpiRow}
+                >
+                    <KPI title="Total Users" value="128" trend="+12%" />
+                    <KPI title="Active Today" value="42" trend="+6%" />
+                    <KPI title="High Risk" value="12" danger trend="+3%" />
+                    <KPI title="Total Assets" value="₹1.2 Cr" />
+                    <KPI title="Total Liabilities" value="₹82 L" />
+                </ScrollView>
+
+                {/* AI INSIGHT */}
+                <View style={styles.aiCard}>
+                    <Text style={styles.aiTitle}>AI Risk Insight</Text>
+                    <Text style={styles.aiText}>
+                        ⚠️ 9 users crossed the safe debt threshold this month.
+                        {"\n"}AI suggests proactive alerts to prevent defaults.
+                    </Text>
+
+                    <TouchableOpacity onPress={() => {router.push("/risk")}} style={styles.aiBtn}>
+                        <Text style={styles.aiBtnText}>
+                            View High-Risk Users
+                        </Text>
+                    </TouchableOpacity>
                 </View>
-            </View>
 
-            {/* KPI STRIP */}
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.kpiRow}
-            >
-                <KPI title="Total Users" value="128" trend="+12%" />
-                <KPI title="Active Today" value="42" trend="+6%" />
-                <KPI title="High Risk" value="12" danger trend="+3%" />
-                <KPI title="Total Assets" value="₹1.2 Cr" />
-                <KPI title="Total Liabilities" value="₹82 L" />
-            </ScrollView>
+                {/* GROWTH CHART */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>
+                        User Growth Trend
+                    </Text>
 
-            {/* AI INSIGHT */}
-            <View style={styles.aiCard}>
-                <Text style={styles.aiTitle}>AI Risk Insight</Text>
-                <Text style={styles.aiText}>
-                    ⚠️ 9 users crossed the safe debt threshold this month.
-                    {"\n"}AI suggests proactive alerts to prevent defaults.
-                </Text>
+                    <LineChart
+                        data={{
+                            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+                            datasets: [
+                                { data: userCount },
+                            ],
+                        }}
+                        width={width - 40}
+                        height={220}
+                        chartConfig={chartConfig}
+                        bezier
+                        style={styles.chart}
+                    />
+                </View>
 
-                <TouchableOpacity style={styles.aiBtn}>
-                    <Text style={styles.aiBtnText}>View High-Risk Users</Text>
-                </TouchableOpacity>
-            </View>
+                {/* HIGH RISK USERS */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>
+                        Critical Risk Users
+                    </Text>
 
-            {/* GROWTH CHART */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>User Growth Trend</Text>
-
-                <LineChart
-                    data={{
-                        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-                        datasets: [{ data: [34, 52, 70, 92, 110, 128] }],
-                    }}
-                    width={width - 40}
-                    height={220}
-                    chartConfig={chartConfig}
-                    bezier
-                    style={styles.chart}
-                />
-            </View>
-
-            {/* HIGH RISK USERS */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Critical Risk Users</Text>
-
-                {["arun@mail.com", "megha@mail.com", "rohan@mail.com"].map(
-                    (u, i) => (
+                    {[
+                        "arun@mail.com",
+                        "megha@mail.com",
+                        "rohan@mail.com",
+                    ].map((u, i) => (
                         <View key={i} style={styles.userRow}>
                             <View>
                                 <Text style={styles.userEmail}>{u}</Text>
@@ -94,17 +136,9 @@ export default function AdminDashboard() {
                             </View>
                             <Text style={styles.critical}>CRITICAL</Text>
                         </View>
-                    )
-                )}
-            </View>
-
-            {/* ADMIN ACTIONS */}
-            <View style={styles.actions}>
-                <ActionBtn title="Manage Users" primary />
-                <ActionBtn title="Send Alerts" />
-                <ActionBtn title="System Reports" />
-            </View>
-        </ScrollView>
+                    ))}
+                </View>
+            </ScrollView>
     );
 }
 
@@ -113,43 +147,17 @@ export default function AdminDashboard() {
 const KPI = ({ title, value, trend, danger }: any) => (
     <View style={[styles.kpiCard, danger && styles.kpiDanger]}>
         <Text style={styles.kpiTitle}>{title}</Text>
-        <Text style={[styles.kpiValue, danger && { color: "#ff6b6b" }]}>
+        <Text
+            style={[
+                styles.kpiValue,
+                danger && { color: "#ff6b6b" },
+            ]}
+        >
             {value}
         </Text>
         {trend && <Text style={styles.kpiTrend}>{trend}</Text>}
     </View>
 );
-
-const ActionBtn = ({ title, primary, cruicial, onPress }: any) => (
-    <TouchableOpacity
-        onPress={onPress}
-        style={[
-            styles.actionBtn,
-            primary && {
-                ...styles.actionPrimary,
-                borderColor: "#041F1A",
-            },
-            {
-                borderColor: "#041F1A",
-            },
-            cruicial && {
-                padding: 8,
-                borderColor: "#ff6b6b",
-            },
-        ]}
-    >
-        <Text
-            style={[
-                styles.actionText,
-                primary && { color: "#041F1A" },
-                cruicial && { color: "#ff6b6b" },
-            ]}
-        >
-            {title}
-        </Text>
-    </TouchableOpacity>
-);
-
 
 /* ---------- CHART CONFIG ---------- */
 
@@ -176,21 +184,19 @@ const styles = StyleSheet.create({
 
     hero: {
         marginBottom: 24,
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between"
+        marginLeft: 30
     },
 
     heroTitle: {
         color: "#e5fff6",
-        fontSize: 26,
+        fontSize: 24,
         fontWeight: "900",
     },
 
     heroSub: {
         color: "#9aa8a6",
-        marginTop: 6,
-        fontSize: 14,
+        marginTop: 4,
+        fontSize: 13,
     },
 
     kpiRow: {
@@ -300,27 +306,5 @@ const styles = StyleSheet.create({
     critical: {
         color: "#ff6b6b",
         fontWeight: "900",
-    },
-
-    actions: {
-        marginTop: 10,
-    },
-
-    actionBtn: {
-        borderWidth: 1,
-        paddingVertical: 14,
-        borderRadius: 16,
-        marginBottom: 12,
-    },
-
-    actionPrimary: {
-        backgroundColor: "#00d48a",
-    },
-
-    actionText: {
-        color: "#00d48a",
-        fontWeight: "800",
-        textAlign: "center",
-        fontSize: 16,
     },
 });

@@ -8,7 +8,10 @@ export enum RiskClass {
     RISKY = "RISKY",
     NOT_RECOMMENDED = "NOT_RECOMMENDED"
 }
-
+export enum TransactionType {
+    CREDIT = "CREDIT",
+    DEBIT = "DEBIT"
+}
 export type Message = {
     id?: number;
     text: string;
@@ -28,6 +31,8 @@ export interface User {
     email: string;
     age: number;
     role: UserRole;
+    createdAt: number | null;
+    updatedAt: number | null;
 }
 
 export type Asset = {
@@ -71,4 +76,13 @@ export interface Recommendation {
     suggestedAssets?: SuggestedAsset[];
     explanation?: string;
     [k: string]: any;
+}
+
+
+export interface BankStatement {
+    id: number | string;
+    date: string;
+    particular: string;
+    transactionType: TransactionType,
+    amount: number
 }

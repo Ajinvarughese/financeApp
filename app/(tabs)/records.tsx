@@ -113,6 +113,31 @@ export default function Records() {
         setSavedLiability(null);
     };
 
+    const getRiskBadgeStyle = (risk?: string) => {
+        switch (risk) {
+            case "NOT_RECOMMENDED":
+                return {
+                    bg: "rgba(255, 77, 77, 0.2)",   // red
+                    text: "#ff4d4d",
+                };
+            case "RISKY":
+                return {
+                    bg: "rgba(255, 165, 0, 0.2)",   // orange
+                    text: "#ffa500",
+                };
+            case "SAFE":
+                return {
+                    bg: "rgba(0, 212, 138, 0.2)",   // green
+                    text: "#00d48a",
+                };
+            default:
+                return {
+                    bg: "rgba(255,255,255,0.15)",
+                    text: "#fff",
+                };
+        }
+    };
+
     return (
         <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 120 }}>
             <View style={styles.glow} />
@@ -162,11 +187,17 @@ export default function Records() {
                     <View style={styles.modalBox}>
                         <Text style={styles.modalTitle}>AI Analysis</Text>
 
-                        <View style={styles.badge}>
-                            <Text style={styles.badgeText}>
-                                {enumToString(savedLiability?.riskClass)}
-                            </Text>
-                        </View>
+                        {(() => {
+                            const riskStyle = getRiskBadgeStyle(savedLiability?.riskClass);
+
+                            return (
+                                <View style={[styles.badge, { backgroundColor: riskStyle.bg }]}>
+                                    <Text style={[styles.badgeText, { color: riskStyle.text }]}>
+                                        {enumToString(savedLiability?.riskClass)}
+                                    </Text>
+                                </View>
+                            );
+                        })()}
 
                         <Markdown style={markdownStyles}>
                             {savedLiability?.aiResponse}

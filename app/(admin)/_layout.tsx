@@ -1,12 +1,18 @@
-import { Stack } from "expo-router";
+import AdminSidebar from "@/components/AdminSidebar";
+import { Slot, usePathname } from "expo-router";
 
 export default function AdminLayout() {
+    const pathname = usePathname();
+
+    const active =
+        pathname.includes("users") ? "users" :
+        pathname.includes("risk") ? "risk" :
+        pathname.includes("alerts") ? "alerts" :
+        "dashboard";
+
     return (
-        <Stack
-            screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: "#071013" },
-            }}
-        />
+        <AdminSidebar prop={active}>
+            <Slot />
+        </AdminSidebar>
     );
 }

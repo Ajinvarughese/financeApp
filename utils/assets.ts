@@ -34,20 +34,13 @@ export async function saveAsset(
     return res.data as Asset;
 }
 /* ---------------- GET ASSETS ---------------- */
-export async function getAssets(): Promise<Asset[]> {
-    const user = await getUser();
-    if (!user) return [];
 
-    const key = `assets_${user.email}`;
-    const raw = await AsyncStorage.getItem(key);
-
-    return raw ? JSON.parse(raw) : [];
+export async function fetchAssets(): Promise<Asset[]> {
+  const res = await axios.get<Asset[]>(`${API_URL}/asset`);
+  return res.data; 
 }
 
 /* ---------------- CLEAR ASSETS (OPTIONAL) ---------------- */
-export async function clearAssets() {
-    const user = await getUser();
-    if (!user) return;
-
-    await AsyncStorage.removeItem(`assets_${user.email}`);
+export async function deleteAsset(id : number) {
+   await axios.delete(`${API_URL}/asset/${id}`)
 }

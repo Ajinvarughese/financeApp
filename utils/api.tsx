@@ -1,19 +1,8 @@
-import { Asset, MessageRequest } from "@/types/entity";
+import { Asset, BankStatement, MessageRequest } from "@/types/entity";
 import axios from "axios";
 import API_URL from "./ApiUrl";
 import { Message } from "@/types/entity";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// get assets
-export async function fetchAssets(): Promise<Asset[]> {
-  const res = await axios.get<Asset[]>(`${API_URL}/asset`);
-  return res.data; 
-}
-
-export async function addAsset(asset: Asset): Promise<Asset> {
-    const res = await axios.post<Asset>(`${API_URL}/asset`, asset);
-    return res.data;   
-}
 
 export async function getChatLog(): Promise<Message[]> {
   const user = await AsyncStorage.getItem("user");
@@ -33,5 +22,12 @@ export async function generateAiResponse(redBody: MessageRequest) : Promise<Mess
 
 export async function deleteChatLog() {
   const user = await AsyncStorage.getItem("user");
-    const res = await axios.delete(`${API_URL}/ai/chat`, { headers: { "Authorization": `Bearer ${(user)}` } });
+  await axios.delete(`${API_URL}/ai/chat`, { headers: { "Authorization": `Bearer ${(user)}` } });
+}
+
+
+export async function getBankStatement(): Promise<BankStatement[]> {
+  const user = await AsyncStorage.getItem("user");
+  const res = await axios.get(`${API_URL}/bankstatement`, { headers: { "Authorization": `Bearer ${(user)}` } });
+  return res.data;
 }
