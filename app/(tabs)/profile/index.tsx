@@ -33,7 +33,7 @@ export default function Profile() {
 
     const logoutUser = async () => {
         logout();
-        router.replace("../");
+        router.replace("/(auth)/welcome");
     };
 
     if (!user) {

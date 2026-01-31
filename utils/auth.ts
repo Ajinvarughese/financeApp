@@ -2,6 +2,7 @@ import { User } from "@/types/entity";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import API_URL from "./ApiUrl";
+import { useRouter } from "expo-router";
 
 
 export const getUser = async (): Promise<User | null> => {
@@ -29,5 +30,5 @@ export const getUser = async (): Promise<User | null> => {
 
 
 export const logout = async () => {
-    await AsyncStorage.removeItem("user");
+  await AsyncStorage.removeItem("user");
 };

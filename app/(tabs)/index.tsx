@@ -27,7 +27,7 @@ export default function Index() {
         const loadUser = async () => {
             const u = await getUser();
             setUser(u);
-            if(!u) router.replace("../");
+            if(!u) router.replace("/(auth)/welcome");
         };
         loadUser();
     }, [isFocused]);
@@ -54,8 +54,7 @@ export default function Index() {
                         onPress={async () => {
                             await logout();
                             setUser(null);
-                            router.replace("../");
-                            window.location.reload();
+                            router.replace("/(auth)/welcome");
                         }}
                     >
                         <Text style={[styles.outlineText, { color: "#EF4444" }]}>

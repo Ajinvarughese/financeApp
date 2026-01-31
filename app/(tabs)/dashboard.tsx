@@ -407,7 +407,7 @@ export default function Dashboard() {
                     centerLabel="Summary"
                 />
 
-                <TouchableOpacity style={styles.btnPrimary} onPress={}>
+                <TouchableOpacity style={styles.btnPrimary}>
                     <Text style={styles.btnText}>Upload bank statement</Text>
                 </TouchableOpacity>
             </ScrollView>
@@ -426,6 +426,18 @@ const StatCard = ({ label, value, color }: any) => (
 /* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
+    btnPrimary: {
+        backgroundColor: "#00d48a",
+        paddingVertical: 14,
+        borderRadius: 14,
+        marginTop: 10,
+    },
+    btnText: {
+        textAlign: "center",
+        color: "#061014",
+        fontWeight: "900",
+        fontSize: 16,
+    },
     root: {
         flex: 1,
         backgroundColor: "#071013",
