@@ -1,11 +1,12 @@
 import { extractUpiName } from "@/services/textFormat";
+import * as DocumentPicker from "expo-document-picker";
 import {
     Asset,
     BankStatement,
     Liability,
     TransactionType,
 } from "@/types/entity";
-import { getBankStatement } from "@/utils/api";
+import { getBankStatement, uploadBankStatement } from "@/utils/api";
 import { fetchAssets } from "@/utils/assets";
 import { getLiabilities } from "@/utils/liabilities";
 import { useFocusEffect } from "expo-router";
@@ -18,8 +19,10 @@ import {
     Dimensions,
     ActivityIndicator,
     TouchableOpacity,
+    Alert,
 } from "react-native";
 import { LineChart, PieChart } from "react-native-chart-kit";
+import axios from "axios";
 
 const { width } = Dimensions.get("window");
 
@@ -93,12 +96,45 @@ export default function Dashboard() {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [liabilities, setLiabilities] = useState<Liability[]>([]);
     const [bankStatement, setBankStatement] = useState<BankStatement[]>([]);
+    const [uploading, setUploading] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
             load();
         }, [])
     );
+
+    const handleStatement = async () => {
+        if (uploading) return;
+
+        try {
+
+            const result = await DocumentPicker.getDocumentAsync({
+            type: "*/*",
+            copyToCacheDirectory: true,
+            });
+
+            if (result.canceled) return;
+
+            const file = result.assets[0];
+
+            setUploading(true);
+            await uploadBankStatement(file);
+
+            Alert.alert("Success ✅", "Bank statement uploaded successfully");
+            load();
+
+        } catch (err: any) {
+            if (axios.isAxiosError(err) && err.response?.status === 409) {
+            Alert.alert("Already uploaded ⚠️", "File already uploaded");
+            } else {
+            Alert.alert("Upload failed ❌");
+            console.error(err);
+            }
+        } finally {
+            setUploading(false);
+        }
+        };
 
     const load = async () => {
         setLoading(true);
@@ -159,7 +195,7 @@ export default function Dashboard() {
 
     const assetTrend = assets.slice(0, 6).map((a) => a.income || 0);
     const liabilityTrend = liabilities.slice(0, 6).map((l) => l.emi || 0);
-        console.log(liabilityTrend);
+
     /* ---------------- BANK STATEMENT (LAST 30 DAYS) ---------------- */
 
     const last30Days = getLast30DaysStatements(bankStatement);
@@ -407,9 +443,22 @@ export default function Dashboard() {
                     centerLabel="Summary"
                 />
 
-                <TouchableOpacity style={styles.btnPrimary}>
-                    <Text style={styles.btnText}>Upload bank statement</Text>
-                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[
+                        styles.btnPrimary,
+                        uploading && { opacity: 0.6 }
+                    ]}
+                    onPress={handleStatement}
+                    disabled={uploading}
+                    >
+                    {uploading ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text style={styles.btnText}>Upload bank statement</Text>
+                    )}
+                    </TouchableOpacity>
+
+
             </ScrollView>
     );
 }
