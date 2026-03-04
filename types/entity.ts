@@ -35,6 +35,11 @@ export interface User {
     updatedAt: number | null;
 }
 
+export interface OTP {
+    email: string;
+    otp: string;
+}
+
 export type Asset = {
     id: string;
     name: string;

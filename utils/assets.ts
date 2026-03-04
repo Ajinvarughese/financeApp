@@ -36,9 +36,13 @@ export async function saveAsset(
 /* ---------------- GET ASSETS ---------------- */
 
 export async function fetchAssets(): Promise<Asset[]> {
-  const res = await axios.get<Asset[]>(`${API_URL}/asset`);
-  return res.data; 
+    const token = await AsyncStorage.getItem("user");
+    const res = await axios.get<Asset[]>(`${API_URL}/asset/user`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data; 
 }
+
 
 /* ---------------- CLEAR ASSETS (OPTIONAL) ---------------- */
 export async function deleteAsset(id : number) {
