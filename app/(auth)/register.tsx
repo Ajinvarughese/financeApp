@@ -6,7 +6,7 @@ import AuthField from "@/components/AuthField";
 import { AUTH } from "@/constants/authTheme";
 import axios from "axios";
 import API_URL from "@/utils/ApiUrl";
-import { generateOtp, sendOtp, validateOtp } from "@/utils/otpApi";
+import { generateOtp } from "@/utils/otpApi";
 
 export default function Register() {
     const router = useRouter();
@@ -48,11 +48,11 @@ export default function Register() {
          );
        }
        try {
-         const payload = { email };
+            const payload = { email };
 
-         const otp = await generateOtp(payload);
-         await sendOtp(otp.otp, otp.email);
-         setOtpSent(true);
+            const otp = await generateOtp(payload);
+            console.log(otp);
+            setOtpSent(true);
        } catch (error) {
          Alert.alert("Couldn't send OTP", "Failed to send OTP. Please try again");
        } finally {

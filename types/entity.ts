@@ -52,17 +52,19 @@ export type Asset = {
 };
 
 export type Liability = {
-    id: string;
-    name: string;
-    amount: number;
-    interest?: number;
-    months?: number;
-    emi: number;
-    note?: string;
-    riskClass: RiskClass;
-    aiResponse: string;
-    createdAt: number;
-    updatedAt: number;
+  id: string;
+  name: string;
+  amount: number;
+  interest?: number;
+  months?: number;
+  emi: number;
+  institution?: string;
+  document?: string;
+  note?: string;
+  riskClass: RiskClass;
+  aiResponse: string;
+  createdAt: number;
+  updatedAt: number;
 };
 
 export interface SuggestedAsset {
