@@ -7,7 +7,7 @@ export default function AdminLayout() {
     const active =
         pathname.includes("users") ? "users" :
         pathname.includes("risk") ? "risk" :
-        pathname.includes("alerts") ? "alerts" :
+        pathname.includes("feedback") ? "feedback" :
         "dashboard";
 
     return (

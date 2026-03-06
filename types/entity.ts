@@ -3,6 +3,11 @@ export enum UserRole {
   ADMIN = "ADMIN"
 }
 
+export enum AccountStatus {
+  ACTIVE = "ACTIVE",
+  SUSPENDED = "SUSPENDED"
+}
+
 export enum RiskClass {
     SAFE = "SAFE",
     RISKY = "RISKY",
@@ -23,6 +28,11 @@ export interface MessageRequest {
     text: string;
     userId: number;
 }
+export interface FullUser {
+    user: User;
+    assets: Asset[];
+    liabilities: Liability[];
+}
 
 export interface User {
     id: number;
@@ -31,6 +41,7 @@ export interface User {
     email: string;
     age: number;
     role: UserRole;
+    accountStatus: AccountStatus;
     createdAt: number | null;
     updatedAt: number | null;
 }
@@ -67,6 +78,22 @@ export type Liability = {
   updatedAt: number;
 };
 
+export interface Notification {
+  id?: number;
+
+  user: {id : number};
+
+  title: string;
+
+  message: string;
+
+  priority: "LOW" | "MEDIUM" | "HIGH";
+
+  isRead?: boolean;
+
+  createdAt?: number;
+}
+
 export interface SuggestedAsset {
     name: string;
     reason?: string;
@@ -92,4 +119,19 @@ export interface BankStatement {
     particular: string;
     transactionType: TransactionType,
     amount: number
+}
+
+export enum FeedbackStatus {
+    ISSUED = "ISSUED",
+    RESOLVED = "RESOLVED"
+}
+export interface Feedback {
+  id?: number;
+  user: { id: number };
+  title: string;
+  comment: string;
+  feedbackStatus: FeedbackStatus;
+  document?: string;
+  createdAt?: number;
+  updatedAt?: number;
 }

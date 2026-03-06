@@ -5,6 +5,7 @@ import {
     TouchableOpacity,
     StyleSheet,
     Alert,
+    ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { AUTH } from "@/constants/authTheme";
@@ -19,8 +20,10 @@ export default function Login() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleLogin = async () => {
+        setLoading(true);
         if (password.length < 6) {
             return Alert.alert(
                 "Weak Password",
@@ -45,37 +48,58 @@ export default function Login() {
             }
 
         } catch (error) {
-            Alert.alert("Login Failed", "Email or password is incorrect");
+            if(axios.isAxiosError(error)) {
+                if(error.response?.status === 423) {
+                    router.push("/(auth)/suspended");
+                } else {
+                    Alert.alert(
+                      "Login Failed",
+                      "Email or password is incorrect"
+                    );
+                }
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
 
     return (
-        <View style={styles.root}>
-            <View style={styles.glow1} />
-            <View style={styles.glow2} />
+      <View style={styles.root}>
+        <View style={styles.glow1} />
+        <View style={styles.glow2} />
 
-            <Text style={styles.title}>Sign In</Text>
-            <Text style={styles.tag}>Access your dashboard</Text>
+        <Text style={styles.title}>Sign In</Text>
+        <Text style={styles.tag}>Access your dashboard</Text>
 
-            <View style={styles.card}>
-                <AuthField label="Email" value={email} onChange={setEmail} />
-                <AuthField
-                    label="Password"
-                    secure
-                    value={password}
-                    onChange={setPassword}
-                />
-
-                <TouchableOpacity style={styles.btn} onPress={handleLogin}>
-                    <Text style={styles.btnText}>Login</Text>
-                </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
-                <Text style={styles.link}>No account? Create one</Text>
-            </TouchableOpacity>
+        <View style={styles.card}>
+          <AuthField label="Email" value={email} onChange={setEmail} />
+          <AuthField
+            label="Password"
+            secure
+            value={password}
+            onChange={setPassword}
+          />
+          <TouchableOpacity onPress={() => router.push("/(auth)/forgot")}>
+            <Text style={styles.secondLink}>Forgot password?</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            disabled={loading}
+            style={styles.btn}
+            onPress={handleLogin}
+          >
+            {loading ? (
+              <ActivityIndicator color={AUTH.bg} />
+            ) : (
+              <Text style={styles.btnText}>Login</Text>
+            )}
+          </TouchableOpacity>
         </View>
+
+        <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
+          <Text style={styles.link}>No account? Create one</Text>
+        </TouchableOpacity>
+      </View>
     );
 }
 
@@ -143,4 +167,11 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: "700",
     },
+    secondLink: {
+        textAlign: "left",
+        color: AUTH.glow1,
+        fontSize: 13,
+        fontWeight: 400,
+
+    }
 });

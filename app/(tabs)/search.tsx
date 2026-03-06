@@ -10,6 +10,7 @@ import {
     LayoutAnimation,
     Platform,
     UIManager,
+    Linking,
 } from "react-native";
 
 import Delete from "../../assets/icons/delete.png";
@@ -21,6 +22,7 @@ import { deleteLiability, getLiabilities } from "@/utils/liabilities";
 import AIChat from "@/components/AIChat";
 import { Asset, Liability, RiskClass } from "@/types/entity";
 import Markdown from "react-native-markdown-display";
+import { replaceUrl } from "@/utils/api";
 
 type Tab = "assets" | "liabilities" | "ai";
 
@@ -127,46 +129,56 @@ export default function Records() {
                 : { label: "Safe", color: "#00d48a" };
 
         return (
-            <TouchableOpacity
-                style={styles.card}
-                onPress={() => toggleExpand(item.id)}
-            >
-                <View style={styles.cardTop}>
-                    <Text style={styles.cardTitle}>{item.name}</Text>
-                    <StatusBadge {...status} />
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => toggleExpand(item.id)}
+          >
+            <View style={styles.cardTop}>
+              <Text style={styles.cardTitle}>{item.name}</Text>
+              <StatusBadge {...status} />
+            </View>
+
+            <Text style={styles.cardSub}>EMI ₹{item.emi}</Text>
+
+            {expandedId === item.id && (
+              <View style={styles.expandBox}>
+                <Row label="Loan Amount" value={`₹${item.amount}`} />
+                <Row label="Interest" value={`${item.interest}%`} />
+                <Row label="Duration" value={`${item.months} months`} />
+                <Row label="EMI" value={`₹${item.emi}`} />
+
+                {item.note && <Text style={styles.notes}>{item.note}</Text>}
+
+                {item.document && (
+                  <TouchableOpacity
+                    style={styles.pdfBox}
+                    onPress={() => Linking.openURL(replaceUrl(item.document))}
+                  >
+                    <View style={styles.pdfLeft}>
+                      <Text style={styles.pdfIcon}>📄</Text>
+                      <View>
+                        <Text style={styles.pdfTitle}>Loan Document</Text>
+                        <Text style={styles.pdfSub}>
+                          Tap to view / download
+                        </Text>
+                      </View>
+                    </View>
+
+                    <Text style={styles.downloadIcon}>⬇</Text>
+                  </TouchableOpacity>
+                )}
+
+                <View style={styles.aiBox}>
+                  <Text style={styles.aiTitle}>AI Analysis</Text>
+                  <Markdown style={markdownStyles}>{item.aiResponse}</Markdown>
                 </View>
 
-                <Text style={styles.cardSub}>EMI ₹{item.emi}</Text>
-
-                {expandedId === item.id && (
-                    <View style={styles.expandBox}>
-                        <Row label="Loan Amount" value={`₹${item.amount}`} />
-                        <Row label="Interest" value={`${item.interest}%`} />
-                        <Row
-                            label="Duration"
-                            value={`${item.months} months`}
-                        />
-                        <Row label="EMI" value={`₹${item.emi}`} />
-
-                        {item.note && (
-                            <Text style={styles.notes}>{item.note}</Text>
-                        )}
-
-                        <View style={styles.aiBox}>
-                            <Text style={styles.aiTitle}>AI Analysis</Text>
-                            <Markdown style={markdownStyles}>
-                                {item.aiResponse}
-                            </Markdown>
-                        </View>
-
-                        <DeleteButton
-                            onPress={() =>
-                                handleDeleteLiability(Number(item.id))
-                            }
-                        />
-                    </View>
-                )}
-            </TouchableOpacity>
+                <DeleteButton
+                  onPress={() => handleDeleteLiability(Number(item.id))}
+                />
+              </View>
+            )}
+          </TouchableOpacity>
         );
     };
 
@@ -220,6 +232,7 @@ export default function Records() {
                             renderItem={renderItem}
                             keyExtractor={(item) => item.id}
                             contentContainerStyle={{ paddingBottom: 140 }}
+                            showsVerticalScrollIndicator={false}
                         />
                     </>
                 )}
@@ -255,97 +268,134 @@ const Row = ({ label, value, valueColor = "#e5fff6" }: any) => (
 /* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
-    root: { flex: 1, backgroundColor: "#071013" },
-    bg: { position: "absolute", width: "100%", height: "100%", opacity: 0.35 },
+  root: { flex: 1, backgroundColor: "#071013" },
+  bg: { position: "absolute", width: "100%", height: "100%", opacity: 0.35 },
 
-    container: { flex: 1, paddingTop: 60, paddingHorizontal: 20 },
+  container: { flex: 1, paddingTop: 60, paddingHorizontal: 20 },
 
-    header: { alignItems: "center", marginBottom: 20 },
-    logo: { width: 46, height: 42 },
-    title: { color: "#d5efe6", fontSize: 20, fontWeight: "900" },
+  header: { alignItems: "center", marginBottom: 20 },
+  logo: { width: 46, height: 42 },
+  title: { color: "#d5efe6", fontSize: 20, fontWeight: "900" },
 
-    tabs: {
-        flexDirection: "row",
-        backgroundColor: "rgba(255,255,255,0.08)",
-        padding: 6,
-        borderRadius: 14,
-        marginBottom: 20,
-    },
-    tab: {
-        flex: 1,
-        textAlign: "center",
-        paddingVertical: 10,
-        borderRadius: 10,
-        color: "#9aa8a6",
-        fontWeight: "800",
-    },
-    tabActive: { backgroundColor: "#00d48a", color: "#041F1A" },
+  tabs: {
+    flexDirection: "row",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    padding: 6,
+    borderRadius: 14,
+    marginBottom: 20,
+  },
+  tab: {
+    flex: 1,
+    textAlign: "center",
+    paddingVertical: 10,
+    borderRadius: 10,
+    color: "#9aa8a6",
+    fontWeight: "800",
+  },
+  tabActive: { backgroundColor: "#00d48a", color: "#041F1A" },
 
-    empty: { textAlign: "center", color: "#9aa8a6", marginTop: 40 },
+  empty: { textAlign: "center", color: "#9aa8a6", marginTop: 40 },
 
-    card: {
-        backgroundColor: "rgba(255,255,255,0.05)",
-        borderRadius: 18,
-        padding: 16,
-        marginBottom: 14,
-    },
+  card: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 14,
+  },
 
-    cardTop: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
+  cardTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
 
-    cardTitle: { color: "#fff", fontWeight: "800", fontSize: 16 },
-    cardSub: { color: "#cfe3dc", marginTop: 6 },
-    incomeText: { color: "#00d48a", fontWeight: "800" },
+  cardTitle: { color: "#fff", fontWeight: "800", fontSize: 16 },
+  cardSub: { color: "#cfe3dc", marginTop: 6 },
+  incomeText: { color: "#00d48a", fontWeight: "800" },
 
-    expandBox: {
-        marginTop: 12,
-        backgroundColor: "rgba(0,0,0,0.25)",
-        padding: 12,
-        paddingBottom: 52,
-        borderRadius: 12,
-        position: "relative",
-    },
+  expandBox: {
+    marginTop: 12,
+    backgroundColor: "rgba(0,0,0,0.25)",
+    padding: 12,
+    paddingBottom: 52,
+    borderRadius: 12,
+    position: "relative",
+  },
 
-    row: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 6,
-    },
-    rowLabel: { color: "#9aa8a6" },
-    rowValue: { fontWeight: "700" },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  rowLabel: { color: "#9aa8a6" },
+  rowValue: { fontWeight: "700" },
 
-    badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
-    badgeText: { fontSize: 12, fontWeight: "800" },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  badgeText: { fontSize: 12, fontWeight: "800" },
 
-    notes: { marginTop: 8, color: "#9aa8a6" },
+  notes: { marginTop: 8, color: "#9aa8a6" },
 
-    aiBox: {
-        marginTop: 12,
-        backgroundColor: "rgba(0,212,138,0.08)",
-        padding: 12,
-        borderRadius: 12,
-    },
-    aiTitle: { color: "#00d48a", fontWeight: "800" },
+  aiBox: {
+    marginTop: 12,
+    backgroundColor: "rgba(0,212,138,0.08)",
+    padding: 12,
+    borderRadius: 12,
+  },
+  aiTitle: { color: "#00d48a", fontWeight: "800" },
 
-    deleteBtn: {
-        position: "absolute",
-        bottom: 10,
-        right: 10,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 6,
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 10,
-        backgroundColor: "rgba(255,0,0,0.22)",
-    },
-    deleteText: {
-        color: "#fff",
-        fontWeight: "700",
-        fontSize: 13,
-    },
+  deleteBtn: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,0,0,0.22)",
+  },
+  deleteText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 13,
+  },
+  pdfBox: {
+    marginTop: 10,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 12,
+    padding: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+
+  pdfLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  pdfIcon: {
+    fontSize: 26,
+  },
+
+  pdfTitle: {
+    color: "#fff",
+    fontWeight: "800",
+  },
+
+  pdfSub: {
+    color: "#9aa8a6",
+    fontSize: 12,
+  },
+
+  downloadIcon: {
+    color: "#00d48a",
+    fontSize: 18,
+    fontWeight: "900",
+  },
 });
 
 const markdownStyles = {

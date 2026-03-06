@@ -3,46 +3,71 @@ import { getUser } from "./auth";
 import { Liability } from "@/types/entity";
 import axios from "axios";
 import API_URL from "./ApiUrl";
+import { Platform } from "react-native";
 
-
-/* ---------------- SAVE LIABILITY ---------------- */
 /* ---------------- SAVE LIABILITY ---------------- */
 export async function saveLiability(
-    data: Omit<Liability, "id" | "createdAt" | "updatedAt" | "riskClass" | "aiResponse">
+  data: Omit<
+    Liability,
+    "id" | "createdAt" | "updatedAt" | "riskClass" | "aiResponse" | "document"
+  >,
+  file?: any
 ): Promise<Liability> {
-    const user = await getUser();
+  const user = await getUser();
 
-    const param = {
-        name: data.name,
-        amount: data.amount,
-        interest: data.interest,
-        months: data.months,
-        emi: data.emi,
-        note: data.note,
-        user: {
-            id: user?.id
-        }
-    };
+  const liability = {
+    name: data.name,
+    amount: data.amount,
+    interest: data.interest,
+    months: data.months,
+    emi: data.emi,
+    note: data.note,
+    user: { id: user?.id },
+  };
 
-    const res = await axios.post(
-        `${API_URL}/liability`,
-        param,
-        { headers: { "Content-Type": "application/json" } }
-    );
+  const formData = new FormData();
 
-    // 🔥 THIS IS THE KEY LINE
-    return res.data;
+  // send JSON
+  formData.append("liability", JSON.stringify(liability));
+
+  if (file) {
+    if (Platform.OS === "web") {
+      // convert blob url -> real file
+      const blob = await fetch(file.uri).then((r) => r.blob());
+
+      const realFile = new File([blob], file.name, {
+        type: file.type || "application/pdf",
+      });
+
+      formData.append("file", realFile);
+    } else {
+      formData.append("file", {
+        uri: file.uri,
+        name: file.name || "document.pdf",
+        type: file.mimeType || "application/pdf",
+      } as any);
+    }
+  }
+
+  const res = await axios.post(`${API_URL}/liability`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return res.data;
 }
-
 
 /* ---------------- GET LIABILITIES (USER ONLY) ---------------- */
 export async function getLiabilities(): Promise<Liability[]> {
-    const token = await AsyncStorage.getItem("user");
-    const res = await axios.get(`${API_URL}/liability/user`, { headers: { "Authorization": `Bearer ${token}` } });
-    return res.data;
+  const token = await AsyncStorage.getItem("user");
+  const res = await axios.get(`${API_URL}/liability/user`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
 }
 
 /* ---------------- CLEAR (OPTIONAL) ---------------- */
 export async function deleteLiability(id: number) {
-    await axios.delete(`${API_URL}/liability/${id}`);
+  await axios.delete(`${API_URL}/liability/${id}`);
 }

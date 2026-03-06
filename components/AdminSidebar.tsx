@@ -12,7 +12,7 @@ import { logout } from "@/utils/auth";
 
 const SIDEBAR_WIDTH = 260;
 
-type ActivePage = "users" | "risk" | "alerts" | "dashboard" | "";
+type ActivePage = "users" | "risk" | "dashboard" | "feedback" |"";
 
 export default function AdminSidebar({
     children,
@@ -58,69 +58,57 @@ export default function AdminSidebar({
     };
 
     return (
-        <View style={styles.container}>
-            {/* Overlay (blocks ALL touches) */}
-            {open && (
-                <Pressable
-                    style={styles.overlay}
-                    onPress={closeSidebar}
-                />
-            )}
+      <View style={styles.container}>
+        {/* Overlay (blocks ALL touches) */}
+        {open && <Pressable style={styles.overlay} onPress={closeSidebar} />}
 
-            {/* Sidebar */}
-            <Animated.View
-                style={[
-                    styles.sidebar,
-                    { transform: [{ translateX }] },
-                ]}
-            >
-                <Text style={styles.title}>Admin Menu</Text>
+        {/* Sidebar */}
+        <Animated.View
+          style={[styles.sidebar, { transform: [{ translateX }] }]}
+        >
+          <Text style={styles.title}>Admin Menu</Text>
 
-                <NavBtn
-                    title="Dashboard"
-                    active={prop === "dashboard"}
-                    onPress={() => handleNav("/")}
-                />
+          <NavBtn
+            title="Dashboard"
+            active={prop === "dashboard"}
+            onPress={() => handleNav("/")}
+          />
 
-                <NavBtn
-                    title="Manage Users"
-                    active={prop === "users"}
-                    onPress={() => handleNav("/users")}
-                />
-                <NavBtn
-                    title="Risk Dashboard"
-                    active={prop === "risk"}
-                    onPress={() => handleNav("/risk")}
-                />
-                <NavBtn
-                    title="Send Alerts"
-                    active={prop === "alerts"}
-                    onPress={() => handleNav("/alerts")}
-                />
-                
+          <NavBtn
+            title="Manage Users"
+            active={prop === "users"}
+            onPress={() => handleNav("/users")}
+          />
+          <NavBtn
+            title="Risk Dashboard"
+            active={prop === "risk"}
+            onPress={() => handleNav("/risk")}
+          />
 
-                <View style={{ marginTop: 20 }}>
-                    <NavBtn
-                        title="Logout"
-                        danger
-                        onPress={handleLogout}
-                    />
-                </View>
-            </Animated.View>
+          <NavBtn
+            title="Feedback"
+            active={prop === "feedback"}
+            onPress={() => handleNav("/feedback")}
+          />
 
-            {/* Hamburger (ALWAYS BELOW overlay, DISABLED when open) */}
-            <TouchableOpacity
-                onPress={openSidebar}
-                style={styles.hamburger}
-                activeOpacity={0.7}
-                pointerEvents={open ? "none" : "auto"} // 🔒 CRITICAL
-            >
-                <Text style={styles.hamburgerText}>☰</Text>
-            </TouchableOpacity>
+          <View style={{ marginTop: 20 }}>
+            <NavBtn title="Logout" danger onPress={handleLogout} />
+          </View>
+        </Animated.View>
 
-            {/* Page Content */}
-            <View style={styles.page}>{children}</View>
-        </View>
+        {/* Hamburger (ALWAYS BELOW overlay, DISABLED when open) */}
+        <TouchableOpacity
+          onPress={openSidebar}
+          style={styles.hamburger}
+          activeOpacity={0.7}
+          pointerEvents={open ? "none" : "auto"} // 🔒 CRITICAL
+        >
+          <Text style={styles.hamburgerText}>☰</Text>
+        </TouchableOpacity>
+
+        {/* Page Content */}
+        <View style={styles.page}>{children}</View>
+      </View>
     );
 }
 
@@ -182,6 +170,7 @@ const styles = StyleSheet.create({
     sidebar: {
         position: "absolute",
         top: 0,
+        paddingTop: 60,
         bottom: 0,
         width: SIDEBAR_WIDTH,
         backgroundColor: "#071013",

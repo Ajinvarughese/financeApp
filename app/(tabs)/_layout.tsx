@@ -84,7 +84,7 @@ export default function TabsLayout() {
                 name="profile"
                 options={{
                     tabBarIcon: ({ focused }) => (
-                        <TabIcon focused={focused} icon={icons.person} label="index" />
+                        <TabIcon focused={focused} icon={icons.person} label="Profile" />
                     ),
                 }}
             />

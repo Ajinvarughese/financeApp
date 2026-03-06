@@ -22,7 +22,6 @@ import {
     Alert,
 } from "react-native";
 import { LineChart, PieChart } from "react-native-chart-kit";
-import axios from "axios";
 
 const { width } = Dimensions.get("window");
 
@@ -125,16 +124,16 @@ export default function Dashboard() {
             load();
 
         } catch (err: any) {
-            if (axios.isAxiosError(err) && err.response?.status === 409) {
-            Alert.alert("Already uploaded ⚠️", "File already uploaded");
+            if (err?.response?.status === 409) {
+                Alert.alert("Already uploaded ⚠️", "File already uploaded");
             } else {
-            Alert.alert("Upload failed ❌");
-            console.error(err);
+                Alert.alert("Upload failed", "Failed to upload file");
             }
+            
         } finally {
             setUploading(false);
         }
-        };
+    };
 
     const load = async () => {
         setLoading(true);
@@ -187,9 +186,9 @@ export default function Dashboard() {
             : "0";
 
     const riskLevel =
-        Number(emiRatio) > 40
+        Number(emiRatio) > 80
             ? { label: "High Risk", color: "#ff6b6b" }
-            : Number(emiRatio) > 25
+            : Number(emiRatio) > 40
             ? { label: "Moderate", color: "#ffb84d" }
             : { label: "Healthy", color: "#00d48a" };
 

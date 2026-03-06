@@ -6,7 +6,7 @@ import AuthField from "@/components/AuthField";
 import { AUTH } from "@/constants/authTheme";
 import axios from "axios";
 import API_URL from "@/utils/ApiUrl";
-import { generateOtp } from "@/utils/otpApi";
+import { generateOtp, validateOtp } from "@/utils/otpApi";
 
 export default function Register() {
     const router = useRouter();
@@ -119,7 +119,7 @@ export default function Register() {
               }
             } else if (error.response?.status === 409) {
               Alert.alert("Exists", "Email already registered");
-            }
+            } 
           } else {
             Alert.alert("Error", "Something went wrong");
           }

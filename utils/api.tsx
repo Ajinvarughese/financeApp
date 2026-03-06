@@ -47,37 +47,36 @@ export const uploadBankStatement = async (fileObj: any) => {
       type: fileObj.mimeType ?? "application/pdf",
     } as any);
   }
-  const user = await getUser();
-  formData.append("user", user?.id  as any );
 
-  // 🌐 WEB → Axios
+  const user = await getUser();
+  formData.append("user", user?.id as any);
+
   if (Platform.OS === "web") {
-    return axios.post(
-      `${API_URL}/bankstatement/file/upload`,
-      formData,
-      {
-        headers: { Accept: "application/json" },
-        transformRequest: (d) => d,
-      }
-    );
+    return axios.post(`${API_URL}/bankstatement/file/upload`, formData, {
+      headers: { Accept: "application/json" },
+      transformRequest: (d) => d,
+    });
   }
 
-  // 📱 ANDROID / IOS → Fetch (stable)
-  const res = await fetch(
-    `${API_URL}/bankstatement/file/upload`,
-    {
-      method: "POST",
-      body: formData,
-      headers: {
-        Accept: "application/json",
-      },
-    }
-  );
+  const res = await fetch(`${API_URL}/bankstatement/file/upload`, {
+    method: "POST",
+    body: formData,
+    headers: { Accept: "application/json" },
+  });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text);
+    const data = await res.json().catch(() => ({}));
+    throw {
+      response: {
+        status: res.status,
+        data,
+      },
+    };
   }
 
   return res.json();
+};
+
+export const replaceUrl = (url: string = "") => {
+  return url?.replace("http://localhost:8080/api", API_URL);
 };

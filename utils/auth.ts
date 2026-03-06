@@ -28,6 +28,11 @@ export const getUser = async (): Promise<User | null> => {
   }
 };
 
+export const deleteUser = async () => {
+  const token = await AsyncStorage.getItem("user");
+  await axios.delete(`${API_URL}/user`, { headers: { Authorization: `Bearer ${token}` } });
+  logout();
+}
 
 export const logout = async () => {
   await AsyncStorage.removeItem("user");
