@@ -108,31 +108,34 @@ export default function Records() {
             return;
         }
 
-        const res = await saveLiability(
-          {
-            name,
-            amount: Number(amount),
-            interest: interest ? Number(interest) : undefined,
-            months: months ? Number(months) : undefined,
-            emi: Number(emi),
-            note,
-            institution
-          },
-          documentFile
-        );
-          console.log(res)
-        setSavedLiability(res);
-        
-        setShowDialog(true);
-        setLoading(false);
-        setName("");
-        setAmount("");
-        setInterest("");
-        setMonths("");
-        setEmi("");
-        setNote("");
-        setInstitution("");
-        setDocumentFile(null);
+        try {
+          const res = await saveLiability(
+            {
+              name,
+              amount: Number(amount),
+              interest: interest ? Number(interest) : undefined,
+              months: months ? Number(months) : undefined,
+              emi: Number(emi),
+              note,
+              institution
+            },
+            documentFile
+          );
+          setSavedLiability(res);
+        } catch (err) {
+          Alert.alert("AI Evaluation failed", "AI Couldnn't provide response check connectivity")
+        } finally {
+          setShowDialog(true);
+          setLoading(false);
+          setName("");
+          setAmount("");
+          setInterest("");
+          setMonths("");
+          setEmi("");
+          setNote("");
+          setInstitution("");
+          setDocumentFile(null);
+        }
         
     };
 
