@@ -120,7 +120,7 @@ export default function Records() {
           },
           documentFile
         );
-
+          console.log(res)
         setSavedLiability(res);
         
         setShowDialog(true);

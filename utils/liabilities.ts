@@ -22,6 +22,7 @@ export async function saveLiability(
     months: data.months,
     emi: data.emi,
     note: data.note,
+    institution: data.institution,
     user: { id: user?.id },
   };
 

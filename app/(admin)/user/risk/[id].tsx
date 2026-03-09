@@ -67,7 +67,6 @@ export default function RiskUserDetails() {
 
         {/* LIABILITIES */}
         <Text style={styles.sectionTitle}>Liabilities</Text>
-
         {user.liabilities.map((l: Liability) => (
           <View key={l.id} style={styles.card}>
             <Text style={styles.cardTitle}>{l.name}</Text>
@@ -75,11 +74,28 @@ export default function RiskUserDetails() {
             <Text style={styles.meta}>Amount: ₹{l.amount}</Text>
             <Text style={styles.meta}>EMI: ₹{l.emi}</Text>
 
+            {l.interest && (
+              <Text style={styles.meta}>Interest Rate: {l.interest}%</Text>
+            )}
+
+            {l.months && (
+              <Text style={styles.meta}>Duration: {l.months} months</Text>
+            )}
+
             {l.institution && (
               <Text style={styles.meta}>Institution: {l.institution}</Text>
             )}
 
-            {/* DOWNLOAD PDF */}
+            {l.riskClass && (
+              <Text style={styles.meta}>Risk Class: {l.riskClass}</Text>
+            )}
+
+            {l.note && <Text style={styles.note}>Note: {l.note}</Text>}
+
+            {l.aiResponse && (
+              <Text style={styles.ai}>AI Analysis: {l.aiResponse}</Text>
+            )}
+
             {l.document && (
               <TouchableOpacity
                 style={styles.downloadBtn}
@@ -174,5 +190,11 @@ const styles = StyleSheet.create({
     color: "#041F1A",
     fontWeight: "800",
     fontSize: 12,
+  },
+  ai: {
+    color: "#FFD166",
+    fontSize: 12,
+    marginTop: 6,
+    fontStyle: "italic",
   },
 });

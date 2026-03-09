@@ -118,6 +118,8 @@ export default function AIChat() {
             };
 
             setMessages((prev) => [...prev, aiMsg]);
+        } catch(e) {
+            Alert.alert("Can't connect AI", "Please try again later.");
         } finally {
             setIsTyping(false);
         }

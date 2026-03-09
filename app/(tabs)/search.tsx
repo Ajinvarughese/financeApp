@@ -146,6 +146,7 @@ export default function Records() {
                 <Row label="Interest" value={`${item.interest}%`} />
                 <Row label="Duration" value={`${item.months} months`} />
                 <Row label="EMI" value={`₹${item.emi}`} />
+                <Row label="Institution" value={item.institution} />
 
                 {item.note && <Text style={styles.notes}>{item.note}</Text>}
 
